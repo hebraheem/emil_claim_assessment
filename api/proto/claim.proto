@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package claims;
+
+service ClaimConfigService {
+  rpc GetClaimConfig(Empty) returns (ClaimConfigResponseDto);
+  rpc UpdateClaimConfig( ClaimConfigUpdateRequestDto) returns (ClaimConfigResponseDto);
+}
+
+
+
+message Empty {}
+
+message ClaimConfigResponseDto {
+  string message = 1;
+  bool success = 2;
+  int32 status = 3; // HTTP status code
+  repeated Steps data = 4;
+}
+
+message ClaimConfigUpdateRequestDto {
+ repeated Steps request = 1; // List of steps in the claim configuration
+}
+
+message Steps {
+  string title = 1;
+  string description = 2;
+  map<string, ClaimConfigConfigDto> configs = 3;
+}
+
+message ClaimConfigConfigDto {
+  string key = 1;
+  string label = 2;
+  string type = 3; // e.g., text, number, select, checkbox, radio, textarea, multiselect
+  repeated FieldOption options = 4;
+  optional string placeholder = 5;
+  optional bool required = 6;
+  optional string validation = 7; // e.g., regex for validation
+  optional  string default_value = 8; // Default value for the field
+  optional int32 orderingNumber = 9; // Order of the field in the form
+}
+
+message FieldOption {
+  string value = 1; // The actual value of the option
+  string label = 2; // The display label for the option
+}
+

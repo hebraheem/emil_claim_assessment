@@ -1,0 +1,24 @@
+[
+  {
+    "title": "Step 1",
+    "description": "Description for step 1",
+    "configs": {
+      "name": {
+        "type": "text",
+        "required": true,
+        "placeholder": "Enter your name",
+        "label": "Name",
+        "key": "name",
+        "validation": "",
+        "orderingNumber": 1,
+        "options": [
+          {
+            "label": "Option 1",
+            "value": "option1"
+          }
+        ],
+        "defaultValue": ""
+      }
+    }
+  }
+]
