@@ -20,12 +20,14 @@ message ClaimConfigResponseDto {
 
 message ClaimConfigUpdateRequestDto {
  repeated Steps request = 1; // List of steps in the claim configuration
+ string userId = 2;
 }
 
 message Steps {
-  string title = 1;
-  string description = 2;
-  map<string, ClaimConfigConfigDto> configs = 3;
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  map<string, ClaimConfigConfigDto> configs = 4;
 }
 
 message ClaimConfigConfigDto {
@@ -36,7 +38,7 @@ message ClaimConfigConfigDto {
   optional string placeholder = 5;
   optional bool required = 6;
   optional string validation = 7; // e.g., regex for validation
-  optional  string default_value = 8; // Default value for the field
+  optional  string defaultValue = 8; // Default value for the field
   optional int32 orderingNumber = 9; // Order of the field in the form
 }
 

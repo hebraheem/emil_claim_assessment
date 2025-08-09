@@ -1,4 +1,4 @@
-import { Global, Injectable } from '@nestjs/common';
+import { Global, Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from 'generated/prisma';
 /**
@@ -35,10 +35,10 @@ import { PrismaClient } from 'generated/prisma';
  */
 @Global()
 @Injectable()
-export class PrismaService extends PrismaClient {
+export class PrismaService extends PrismaClient implements OnModuleInit {
   constructor(config: ConfigService) {
     super({
-      log: ['query', 'info', 'warn', 'error'],
+      log: ['warn', 'error'],
       errorFormat: 'pretty',
       datasources: {
         db: {
@@ -46,5 +46,9 @@ export class PrismaService extends PrismaClient {
         },
       },
     });
+  }
+
+  async onModuleInit() {
+    await this.$connect();
   }
 }

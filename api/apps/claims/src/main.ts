@@ -3,6 +3,7 @@ import { ClaimsModule } from './claims.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { CLAIMS_PACKAGE_NAME } from 'proto';
 import { join } from 'path';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
@@ -16,6 +17,8 @@ async function bootstrap() {
       },
     },
   );
+
+  app.useGlobalPipes(new ValidationPipe());
 
   await app.listen();
 }

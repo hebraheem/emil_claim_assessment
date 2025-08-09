@@ -1,0 +1,68 @@
+[
+  {
+    "title": "hello",
+    "description": "Description for step 1",
+    "configs": {
+      "name": {
+        "key": "name updated",
+        "label": "Name",
+        "type": "text",
+        "options": [
+          {
+            "value": "option2",
+            "label": "Option 1"
+          }
+        ],
+        "placeholder": "Enter your name",
+        "required": true,
+        "validation": "",
+        "defaultValue": "",
+        "orderingNumber": 1
+      }
+    }
+  },
+  {
+    "title": "Step 2",
+    "description": "Description for step 1",
+    "configs": {
+      "name": {
+        "key": "name 3",
+        "label": "Name",
+        "type": "text",
+        "options": [
+          {
+            "value": "option2",
+            "label": "Option 1"
+          }
+        ],
+        "placeholder": "Enter your name",
+        "required": true,
+        "validation": "",
+        "defaultValue": "",
+        "orderingNumber": 1
+      }
+    }
+  },
+  {
+    "title": "Step 2",
+    "description": "Description for step 1",
+    "configs": {
+      "name": {
+        "key": "name 3",
+        "label": "Name",
+        "type": "text",
+        "options": [
+          {
+            "value": "option2",
+            "label": "Option 1"
+          }
+        ],
+        "placeholder": "Enter your name",
+        "required": true,
+        "validation": "",
+        "defaultValue": "",
+        "orderingNumber": 1
+      }
+    }
+  }
+]

@@ -17,7 +17,7 @@ COPY . .
 # Generate TypeScript proto bindings
 RUN yarn proto:g
 
-#RUN npx prisma generate
+RUN npx prisma generate
 
 # Build the TypeScript project
 # RUN yarn build

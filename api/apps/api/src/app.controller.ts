@@ -1,6 +1,8 @@
-import { Body, Controller, Get, Put } from '@nestjs/common';
+import { Body, Controller, Get, Put, UsePipes } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ClaimConfigResponseDto, ClaimConfigUpdateRequestDto } from 'proto';
+import { GrpcValidationPipe, UserAuthPipe } from './pipes';
+import { VClaimConfigUpdateRequestDto } from './dtos';
 
 @Controller('claims-config')
 export class AppController {
@@ -21,6 +23,7 @@ export class AppController {
    * @returns {Promise<ClaimConfigResponseDto>} A promise that resolves to ClaimConfigResponseDto confirming the update.
    */
   @Put()
+  @UsePipes(UserAuthPipe, new GrpcValidationPipe(VClaimConfigUpdateRequestDto))
   updateConfig(
     @Body() body: ClaimConfigUpdateRequestDto,
   ): Promise<ClaimConfigResponseDto> {

@@ -25,6 +25,7 @@ export interface ClaimConfigResponseDto {
 export interface ClaimConfigUpdateRequestDto {
   /** List of steps in the claim configuration */
   request: Steps[];
+  userId: string;
 }
 
 export interface Steps {
@@ -166,13 +167,16 @@ export const ClaimConfigResponseDto: MessageFns<ClaimConfigResponseDto> = {
 };
 
 function createBaseClaimConfigUpdateRequestDto(): ClaimConfigUpdateRequestDto {
-  return { request: [] };
+  return { request: [], userId: "" };
 }
 
 export const ClaimConfigUpdateRequestDto: MessageFns<ClaimConfigUpdateRequestDto> = {
   encode(message: ClaimConfigUpdateRequestDto, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     for (const v of message.request) {
       Steps.encode(v!, writer.uint32(10).fork()).join();
+    }
+    if (message.userId !== "") {
+      writer.uint32(18).string(message.userId);
     }
     return writer;
   },
@@ -190,6 +194,14 @@ export const ClaimConfigUpdateRequestDto: MessageFns<ClaimConfigUpdateRequestDto
           }
 
           message.request.push(Steps.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.userId = reader.string();
           continue;
         }
       }

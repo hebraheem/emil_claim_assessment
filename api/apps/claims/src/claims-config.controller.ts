@@ -1,6 +1,7 @@
-import { Controller } from '@nestjs/common';
+import { Body, Controller } from '@nestjs/common';
 import { ClaimsConfigService } from './claims-config.service';
 import { GrpcMethod } from '@nestjs/microservices';
+
 import {
   CLAIM_CONFIG_SERVICE_NAME,
   ClaimConfigResponseDto,
@@ -28,11 +29,11 @@ export class ClaimsConfigController implements ClaimConfigServiceController {
    * @param {ClaimConfigUpdateRequestDto} body - The request body containing the configuration data to update.
    * @returns {Promise<ClaimConfigResponseDto>} A promise that resolves to ClaimConfigResponseDto confirming the update.
    */
+  // @UsePipes(UserAuthPipe)
   @GrpcMethod(CLAIM_CONFIG_SERVICE_NAME, 'UpdateClaimConfig')
-  updateClaimConfig(
+  async updateClaimConfig(
     body: ClaimConfigUpdateRequestDto,
   ): Promise<ClaimConfigResponseDto> {
-    // This method updates the claim configuration
     return this.claimsConfigService.updateConfig(body);
   }
 }
