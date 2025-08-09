@@ -15,3 +15,29 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Claim {
+  claimId          Int     @id @default(autoincrement())
+  userId           String
+  policyId         String
+  description      String
+  dateOfIncident   String
+  dateOfSubmission String
+  incidentType     String
+  attributes       Json
+  status           String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  rejectionReason  String? // optional
+}
+
+
+
+model ClaimMeta {
+  id      Int    @id @default(autoincrement())
+  claimId Int
+  key     String
+  value   String
+
+  @@unique([claimId, key])
+  @@index([claimId])
+}

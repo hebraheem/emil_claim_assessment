@@ -16,6 +16,13 @@ class FieldOptionDto {
   label: string;
 }
 
+class DependsOnDto {
+  @IsString()
+  key: string;
+
+  value: string;
+}
+
 class ClaimConfigConfigDto {
   @IsString()
   key: string;
@@ -47,6 +54,11 @@ class ClaimConfigConfigDto {
 
   @IsOptional()
   orderingNumber?: number;
+
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => DependsOnDto)
+  dependsOn?: DependsOnDto;
 }
 
 class StepsDto {
@@ -58,6 +70,14 @@ class StepsDto {
   description?: string;
 
   configs: Record<string, ClaimConfigConfigDto>;
+
+  @IsOptional()
+  @IsBoolean()
+  fixed?: boolean;
+
+  @IsOptional()
+  @IsInt()
+  orderingNumber?: number;
 }
 
 export class VClaimConfigUpdateResponseDto {

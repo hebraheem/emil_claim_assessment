@@ -29,9 +29,16 @@ export interface ClaimConfigUpdateRequestDto {
 }
 
 export interface Steps {
+  id: string;
   title: string;
   description: string;
   configs: { [key: string]: ClaimConfigConfigDto };
+  /** Indicates if the step is fixed and cannot be removed */
+  fixed?:
+    | boolean
+    | undefined;
+  /** Order of the step in the form */
+  orderingNumber?: number | undefined;
 }
 
 export interface Steps_ConfigsEntry {
@@ -58,7 +65,11 @@ export interface ClaimConfigConfigDto {
     | string
     | undefined;
   /** Order of the field in the form */
-  orderingNumber?: number | undefined;
+  orderingNumber?:
+    | number
+    | undefined;
+  /** Key of the field this depends on */
+  dependsOn?: DependsOn | undefined;
 }
 
 export interface FieldOption {
@@ -66,6 +77,155 @@ export interface FieldOption {
   value: string;
   /** The display label for the option */
   label: string;
+}
+
+export interface DependsOn {
+  /** Key of the field this depends on */
+  key: string;
+  /** Values that this field depends on */
+  value: string;
+}
+
+export interface GetClaimsRequest {
+  /** Add fields as needed, e.g., pagination or filters */
+  page: number;
+  pageSize: number;
+  /** ID of the user to filter claims */
+  userId: string;
+  /** Status of the claims to filter */
+  status: string;
+}
+
+export interface Claim {
+  claimId: number;
+  userId: string;
+  policyId: string;
+  description: string;
+  /** Date of the incident */
+  dateOfIncident: string;
+  /** Date when the claim was reported */
+  dateOfSubmission: string;
+  /** Type of incident (e.g., theft, accident */
+  incidentType: string;
+  attributes: { [key: string]: string };
+  status: string;
+  /** Timestamp of when the claim was created */
+  createdAt: string;
+  /** Timestamp of when the claim was last updated */
+  updatedAt: string;
+  /** Reason for rejection if the claim is rejected */
+  rejectionReason?: string | undefined;
+}
+
+export interface Claim_AttributesEntry {
+  key: string;
+  value: string;
+}
+
+export interface GetClaimsResponse {
+  message: string;
+  success: boolean;
+  /** HTTP status code */
+  status: number;
+  /** List of claims */
+  claims: Claim[];
+  meta: { [key: string]: number };
+}
+
+export interface GetClaimsResponse_MetaEntry {
+  key: string;
+  value: number;
+}
+
+export interface GetClaimResponse {
+  message: string;
+  success: boolean;
+  /** HTTP status code */
+  status: number;
+  /** The retrieved claim object */
+  claim: Claim | undefined;
+}
+
+export interface GetClaimRequest {
+  /** ID of the claim to retrieve */
+  claimId: number;
+  /** ID of the user requesting the claim */
+  userId: string;
+}
+
+export interface CreateClaimResponse {
+  message: string;
+  success: boolean;
+  /** HTTP status code */
+  status: number;
+  /** ID of the created claim */
+  claimId: number;
+}
+
+export interface CreateClaimRequest {
+  /** ID of the user creating the claim */
+  userId: string;
+  /** ID of the policy associated with the claim */
+  policyId: string;
+  /** Description of the claim */
+  description: string;
+  /** Additional data for the claim */
+  attributes: { [key: string]: string };
+}
+
+export interface CreateClaimRequest_AttributesEntry {
+  key: string;
+  value: string;
+}
+
+export interface UpdateClaimRequest {
+  /** ID of the claim to update */
+  claimId: number;
+  /** ID of the user updating the claim */
+  userId: string;
+  /** Updated description of the claim */
+  description: string;
+  /** Updated attributes for the claim */
+  attributes: { [key: string]: string };
+  /** Updated status of the claim */
+  status: string;
+}
+
+export interface UpdateClaimRequest_AttributesEntry {
+  key: string;
+  value: string;
+}
+
+export interface DeleteClaimRequest {
+  /** ID of the claim to be deleted */
+  claimId: number;
+  /** ID of the user requesting the deletion */
+  userId: string;
+}
+
+export interface UpdateClaimResponse {
+  message: string;
+  success: boolean;
+  /** HTTP status code */
+  status: number;
+  /** The updated claim object */
+  updatedClaim:
+    | Claim
+    | undefined;
+  /** Additional metadata if needed */
+  meta: { [key: string]: number };
+}
+
+export interface UpdateClaimResponse_MetaEntry {
+  key: string;
+  value: number;
+}
+
+export interface DeleteClaimResponse {
+  message: string;
+  success: boolean;
+  /** HTTP status code */
+  status: number;
 }
 
 export const CLAIMS_PACKAGE_NAME = "claims";
@@ -215,20 +375,29 @@ export const ClaimConfigUpdateRequestDto: MessageFns<ClaimConfigUpdateRequestDto
 };
 
 function createBaseSteps(): Steps {
-  return { title: "", description: "", configs: {} };
+  return { id: "", title: "", description: "", configs: {} };
 }
 
 export const Steps: MessageFns<Steps> = {
   encode(message: Steps, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.id !== "") {
+      writer.uint32(10).string(message.id);
+    }
     if (message.title !== "") {
-      writer.uint32(10).string(message.title);
+      writer.uint32(18).string(message.title);
     }
     if (message.description !== "") {
-      writer.uint32(18).string(message.description);
+      writer.uint32(26).string(message.description);
     }
     Object.entries(message.configs).forEach(([key, value]) => {
-      Steps_ConfigsEntry.encode({ key: key as any, value }, writer.uint32(26).fork()).join();
+      Steps_ConfigsEntry.encode({ key: key as any, value }, writer.uint32(34).fork()).join();
     });
+    if (message.fixed !== undefined) {
+      writer.uint32(40).bool(message.fixed);
+    }
+    if (message.orderingNumber !== undefined) {
+      writer.uint32(48).int32(message.orderingNumber);
+    }
     return writer;
   },
 
@@ -244,7 +413,7 @@ export const Steps: MessageFns<Steps> = {
             break;
           }
 
-          message.title = reader.string();
+          message.id = reader.string();
           continue;
         }
         case 2: {
@@ -252,7 +421,7 @@ export const Steps: MessageFns<Steps> = {
             break;
           }
 
-          message.description = reader.string();
+          message.title = reader.string();
           continue;
         }
         case 3: {
@@ -260,10 +429,34 @@ export const Steps: MessageFns<Steps> = {
             break;
           }
 
-          const entry3 = Steps_ConfigsEntry.decode(reader, reader.uint32());
-          if (entry3.value !== undefined) {
-            message.configs[entry3.key] = entry3.value;
+          message.description = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
           }
+
+          const entry4 = Steps_ConfigsEntry.decode(reader, reader.uint32());
+          if (entry4.value !== undefined) {
+            message.configs[entry4.key] = entry4.value;
+          }
+          continue;
+        }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.fixed = reader.bool();
+          continue;
+        }
+        case 6: {
+          if (tag !== 48) {
+            break;
+          }
+
+          message.orderingNumber = reader.int32();
           continue;
         }
       }
@@ -357,6 +550,9 @@ export const ClaimConfigConfigDto: MessageFns<ClaimConfigConfigDto> = {
     if (message.orderingNumber !== undefined) {
       writer.uint32(72).int32(message.orderingNumber);
     }
+    if (message.dependsOn !== undefined) {
+      DependsOn.encode(message.dependsOn, writer.uint32(82).fork()).join();
+    }
     return writer;
   },
 
@@ -439,6 +635,14 @@ export const ClaimConfigConfigDto: MessageFns<ClaimConfigConfigDto> = {
           message.orderingNumber = reader.int32();
           continue;
         }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.dependsOn = DependsOn.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -497,6 +701,1157 @@ export const FieldOption: MessageFns<FieldOption> = {
   },
 };
 
+function createBaseDependsOn(): DependsOn {
+  return { key: "", value: "" };
+}
+
+export const DependsOn: MessageFns<DependsOn> = {
+  encode(message: DependsOn, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.key !== "") {
+      writer.uint32(10).string(message.key);
+    }
+    if (message.value !== "") {
+      writer.uint32(18).string(message.value);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): DependsOn {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDependsOn();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.key = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.value = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseGetClaimsRequest(): GetClaimsRequest {
+  return { page: 0, pageSize: 0, userId: "", status: "" };
+}
+
+export const GetClaimsRequest: MessageFns<GetClaimsRequest> = {
+  encode(message: GetClaimsRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.page !== 0) {
+      writer.uint32(8).int32(message.page);
+    }
+    if (message.pageSize !== 0) {
+      writer.uint32(16).int32(message.pageSize);
+    }
+    if (message.userId !== "") {
+      writer.uint32(26).string(message.userId);
+    }
+    if (message.status !== "") {
+      writer.uint32(34).string(message.status);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetClaimsRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetClaimsRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.page = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.pageSize = reader.int32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.status = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseClaim(): Claim {
+  return {
+    claimId: 0,
+    userId: "",
+    policyId: "",
+    description: "",
+    dateOfIncident: "",
+    dateOfSubmission: "",
+    incidentType: "",
+    attributes: {},
+    status: "",
+    createdAt: "",
+    updatedAt: "",
+  };
+}
+
+export const Claim: MessageFns<Claim> = {
+  encode(message: Claim, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.claimId !== 0) {
+      writer.uint32(8).int32(message.claimId);
+    }
+    if (message.userId !== "") {
+      writer.uint32(18).string(message.userId);
+    }
+    if (message.policyId !== "") {
+      writer.uint32(26).string(message.policyId);
+    }
+    if (message.description !== "") {
+      writer.uint32(34).string(message.description);
+    }
+    if (message.dateOfIncident !== "") {
+      writer.uint32(42).string(message.dateOfIncident);
+    }
+    if (message.dateOfSubmission !== "") {
+      writer.uint32(58).string(message.dateOfSubmission);
+    }
+    if (message.incidentType !== "") {
+      writer.uint32(66).string(message.incidentType);
+    }
+    Object.entries(message.attributes).forEach(([key, value]) => {
+      Claim_AttributesEntry.encode({ key: key as any, value }, writer.uint32(74).fork()).join();
+    });
+    if (message.status !== "") {
+      writer.uint32(82).string(message.status);
+    }
+    if (message.createdAt !== "") {
+      writer.uint32(90).string(message.createdAt);
+    }
+    if (message.updatedAt !== "") {
+      writer.uint32(98).string(message.updatedAt);
+    }
+    if (message.rejectionReason !== undefined) {
+      writer.uint32(106).string(message.rejectionReason);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): Claim {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseClaim();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.claimId = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.policyId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.description = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.dateOfIncident = reader.string();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.dateOfSubmission = reader.string();
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.incidentType = reader.string();
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          const entry9 = Claim_AttributesEntry.decode(reader, reader.uint32());
+          if (entry9.value !== undefined) {
+            message.attributes[entry9.key] = entry9.value;
+          }
+          continue;
+        }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.status = reader.string();
+          continue;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.createdAt = reader.string();
+          continue;
+        }
+        case 12: {
+          if (tag !== 98) {
+            break;
+          }
+
+          message.updatedAt = reader.string();
+          continue;
+        }
+        case 13: {
+          if (tag !== 106) {
+            break;
+          }
+
+          message.rejectionReason = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseClaim_AttributesEntry(): Claim_AttributesEntry {
+  return { key: "", value: "" };
+}
+
+export const Claim_AttributesEntry: MessageFns<Claim_AttributesEntry> = {
+  encode(message: Claim_AttributesEntry, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.key !== "") {
+      writer.uint32(10).string(message.key);
+    }
+    if (message.value !== "") {
+      writer.uint32(18).string(message.value);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): Claim_AttributesEntry {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseClaim_AttributesEntry();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.key = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.value = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseGetClaimsResponse(): GetClaimsResponse {
+  return { message: "", success: false, status: 0, claims: [], meta: {} };
+}
+
+export const GetClaimsResponse: MessageFns<GetClaimsResponse> = {
+  encode(message: GetClaimsResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.message !== "") {
+      writer.uint32(10).string(message.message);
+    }
+    if (message.success !== false) {
+      writer.uint32(16).bool(message.success);
+    }
+    if (message.status !== 0) {
+      writer.uint32(24).int32(message.status);
+    }
+    for (const v of message.claims) {
+      Claim.encode(v!, writer.uint32(34).fork()).join();
+    }
+    Object.entries(message.meta).forEach(([key, value]) => {
+      GetClaimsResponse_MetaEntry.encode({ key: key as any, value }, writer.uint32(42).fork()).join();
+    });
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetClaimsResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetClaimsResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.message = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.success = reader.bool();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.status = reader.int32();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.claims.push(Claim.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          const entry5 = GetClaimsResponse_MetaEntry.decode(reader, reader.uint32());
+          if (entry5.value !== undefined) {
+            message.meta[entry5.key] = entry5.value;
+          }
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseGetClaimsResponse_MetaEntry(): GetClaimsResponse_MetaEntry {
+  return { key: "", value: 0 };
+}
+
+export const GetClaimsResponse_MetaEntry: MessageFns<GetClaimsResponse_MetaEntry> = {
+  encode(message: GetClaimsResponse_MetaEntry, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.key !== "") {
+      writer.uint32(10).string(message.key);
+    }
+    if (message.value !== 0) {
+      writer.uint32(16).int32(message.value);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetClaimsResponse_MetaEntry {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetClaimsResponse_MetaEntry();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.key = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.value = reader.int32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseGetClaimResponse(): GetClaimResponse {
+  return { message: "", success: false, status: 0, claim: undefined };
+}
+
+export const GetClaimResponse: MessageFns<GetClaimResponse> = {
+  encode(message: GetClaimResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.message !== "") {
+      writer.uint32(10).string(message.message);
+    }
+    if (message.success !== false) {
+      writer.uint32(16).bool(message.success);
+    }
+    if (message.status !== 0) {
+      writer.uint32(24).int32(message.status);
+    }
+    if (message.claim !== undefined) {
+      Claim.encode(message.claim, writer.uint32(34).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetClaimResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetClaimResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.message = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.success = reader.bool();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.status = reader.int32();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.claim = Claim.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseGetClaimRequest(): GetClaimRequest {
+  return { claimId: 0, userId: "" };
+}
+
+export const GetClaimRequest: MessageFns<GetClaimRequest> = {
+  encode(message: GetClaimRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.claimId !== 0) {
+      writer.uint32(8).int32(message.claimId);
+    }
+    if (message.userId !== "") {
+      writer.uint32(18).string(message.userId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetClaimRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetClaimRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.claimId = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseCreateClaimResponse(): CreateClaimResponse {
+  return { message: "", success: false, status: 0, claimId: 0 };
+}
+
+export const CreateClaimResponse: MessageFns<CreateClaimResponse> = {
+  encode(message: CreateClaimResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.message !== "") {
+      writer.uint32(10).string(message.message);
+    }
+    if (message.success !== false) {
+      writer.uint32(16).bool(message.success);
+    }
+    if (message.status !== 0) {
+      writer.uint32(24).int32(message.status);
+    }
+    if (message.claimId !== 0) {
+      writer.uint32(32).int32(message.claimId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CreateClaimResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCreateClaimResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.message = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.success = reader.bool();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.status = reader.int32();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.claimId = reader.int32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseCreateClaimRequest(): CreateClaimRequest {
+  return { userId: "", policyId: "", description: "", attributes: {} };
+}
+
+export const CreateClaimRequest: MessageFns<CreateClaimRequest> = {
+  encode(message: CreateClaimRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.userId !== "") {
+      writer.uint32(10).string(message.userId);
+    }
+    if (message.policyId !== "") {
+      writer.uint32(18).string(message.policyId);
+    }
+    if (message.description !== "") {
+      writer.uint32(26).string(message.description);
+    }
+    Object.entries(message.attributes).forEach(([key, value]) => {
+      CreateClaimRequest_AttributesEntry.encode({ key: key as any, value }, writer.uint32(34).fork()).join();
+    });
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CreateClaimRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCreateClaimRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.policyId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.description = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          const entry4 = CreateClaimRequest_AttributesEntry.decode(reader, reader.uint32());
+          if (entry4.value !== undefined) {
+            message.attributes[entry4.key] = entry4.value;
+          }
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseCreateClaimRequest_AttributesEntry(): CreateClaimRequest_AttributesEntry {
+  return { key: "", value: "" };
+}
+
+export const CreateClaimRequest_AttributesEntry: MessageFns<CreateClaimRequest_AttributesEntry> = {
+  encode(message: CreateClaimRequest_AttributesEntry, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.key !== "") {
+      writer.uint32(10).string(message.key);
+    }
+    if (message.value !== "") {
+      writer.uint32(18).string(message.value);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CreateClaimRequest_AttributesEntry {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCreateClaimRequest_AttributesEntry();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.key = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.value = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseUpdateClaimRequest(): UpdateClaimRequest {
+  return { claimId: 0, userId: "", description: "", attributes: {}, status: "" };
+}
+
+export const UpdateClaimRequest: MessageFns<UpdateClaimRequest> = {
+  encode(message: UpdateClaimRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.claimId !== 0) {
+      writer.uint32(8).int32(message.claimId);
+    }
+    if (message.userId !== "") {
+      writer.uint32(18).string(message.userId);
+    }
+    if (message.description !== "") {
+      writer.uint32(26).string(message.description);
+    }
+    Object.entries(message.attributes).forEach(([key, value]) => {
+      UpdateClaimRequest_AttributesEntry.encode({ key: key as any, value }, writer.uint32(34).fork()).join();
+    });
+    if (message.status !== "") {
+      writer.uint32(42).string(message.status);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): UpdateClaimRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseUpdateClaimRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.claimId = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.description = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          const entry4 = UpdateClaimRequest_AttributesEntry.decode(reader, reader.uint32());
+          if (entry4.value !== undefined) {
+            message.attributes[entry4.key] = entry4.value;
+          }
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.status = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseUpdateClaimRequest_AttributesEntry(): UpdateClaimRequest_AttributesEntry {
+  return { key: "", value: "" };
+}
+
+export const UpdateClaimRequest_AttributesEntry: MessageFns<UpdateClaimRequest_AttributesEntry> = {
+  encode(message: UpdateClaimRequest_AttributesEntry, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.key !== "") {
+      writer.uint32(10).string(message.key);
+    }
+    if (message.value !== "") {
+      writer.uint32(18).string(message.value);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): UpdateClaimRequest_AttributesEntry {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseUpdateClaimRequest_AttributesEntry();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.key = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.value = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseDeleteClaimRequest(): DeleteClaimRequest {
+  return { claimId: 0, userId: "" };
+}
+
+export const DeleteClaimRequest: MessageFns<DeleteClaimRequest> = {
+  encode(message: DeleteClaimRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.claimId !== 0) {
+      writer.uint32(8).int32(message.claimId);
+    }
+    if (message.userId !== "") {
+      writer.uint32(18).string(message.userId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): DeleteClaimRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDeleteClaimRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.claimId = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseUpdateClaimResponse(): UpdateClaimResponse {
+  return { message: "", success: false, status: 0, updatedClaim: undefined, meta: {} };
+}
+
+export const UpdateClaimResponse: MessageFns<UpdateClaimResponse> = {
+  encode(message: UpdateClaimResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.message !== "") {
+      writer.uint32(10).string(message.message);
+    }
+    if (message.success !== false) {
+      writer.uint32(16).bool(message.success);
+    }
+    if (message.status !== 0) {
+      writer.uint32(24).int32(message.status);
+    }
+    if (message.updatedClaim !== undefined) {
+      Claim.encode(message.updatedClaim, writer.uint32(34).fork()).join();
+    }
+    Object.entries(message.meta).forEach(([key, value]) => {
+      UpdateClaimResponse_MetaEntry.encode({ key: key as any, value }, writer.uint32(42).fork()).join();
+    });
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): UpdateClaimResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseUpdateClaimResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.message = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.success = reader.bool();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.status = reader.int32();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.updatedClaim = Claim.decode(reader, reader.uint32());
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          const entry5 = UpdateClaimResponse_MetaEntry.decode(reader, reader.uint32());
+          if (entry5.value !== undefined) {
+            message.meta[entry5.key] = entry5.value;
+          }
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseUpdateClaimResponse_MetaEntry(): UpdateClaimResponse_MetaEntry {
+  return { key: "", value: 0 };
+}
+
+export const UpdateClaimResponse_MetaEntry: MessageFns<UpdateClaimResponse_MetaEntry> = {
+  encode(message: UpdateClaimResponse_MetaEntry, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.key !== "") {
+      writer.uint32(10).string(message.key);
+    }
+    if (message.value !== 0) {
+      writer.uint32(16).int32(message.value);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): UpdateClaimResponse_MetaEntry {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseUpdateClaimResponse_MetaEntry();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.key = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.value = reader.int32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
+function createBaseDeleteClaimResponse(): DeleteClaimResponse {
+  return { message: "", success: false, status: 0 };
+}
+
+export const DeleteClaimResponse: MessageFns<DeleteClaimResponse> = {
+  encode(message: DeleteClaimResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.message !== "") {
+      writer.uint32(10).string(message.message);
+    }
+    if (message.success !== false) {
+      writer.uint32(16).bool(message.success);
+    }
+    if (message.status !== 0) {
+      writer.uint32(24).int32(message.status);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): DeleteClaimResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDeleteClaimResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.message = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.success = reader.bool();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.status = reader.int32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+};
+
 export interface ClaimConfigServiceClient {
   getClaimConfig(request: Empty): Observable<ClaimConfigResponseDto>;
 
@@ -529,6 +1884,53 @@ export function ClaimConfigServiceControllerMethods() {
 }
 
 export const CLAIM_CONFIG_SERVICE_NAME = "ClaimConfigService";
+
+export interface ClaimServiceClient {
+  createClaim(request: CreateClaimRequest): Observable<CreateClaimResponse>;
+
+  getClaim(request: GetClaimRequest): Observable<GetClaimResponse>;
+
+  getClaims(request: GetClaimsRequest): Observable<GetClaimsResponse>;
+
+  updateClaim(request: UpdateClaimRequest): Observable<UpdateClaimResponse>;
+
+  deleteClaim(request: DeleteClaimRequest): Observable<DeleteClaimResponse>;
+}
+
+export interface ClaimServiceController {
+  createClaim(
+    request: CreateClaimRequest,
+  ): Promise<CreateClaimResponse> | Observable<CreateClaimResponse> | CreateClaimResponse;
+
+  getClaim(request: GetClaimRequest): Promise<GetClaimResponse> | Observable<GetClaimResponse> | GetClaimResponse;
+
+  getClaims(request: GetClaimsRequest): Promise<GetClaimsResponse> | Observable<GetClaimsResponse> | GetClaimsResponse;
+
+  updateClaim(
+    request: UpdateClaimRequest,
+  ): Promise<UpdateClaimResponse> | Observable<UpdateClaimResponse> | UpdateClaimResponse;
+
+  deleteClaim(
+    request: DeleteClaimRequest,
+  ): Promise<DeleteClaimResponse> | Observable<DeleteClaimResponse> | DeleteClaimResponse;
+}
+
+export function ClaimServiceControllerMethods() {
+  return function (constructor: Function) {
+    const grpcMethods: string[] = ["createClaim", "getClaim", "getClaims", "updateClaim", "deleteClaim"];
+    for (const method of grpcMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
+      GrpcMethod("ClaimService", method)(constructor.prototype[method], method, descriptor);
+    }
+    const grpcStreamMethods: string[] = [];
+    for (const method of grpcStreamMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
+      GrpcStreamMethod("ClaimService", method)(constructor.prototype[method], method, descriptor);
+    }
+  };
+}
+
+export const CLAIM_SERVICE_NAME = "ClaimService";
 
 export interface MessageFns<T> {
   encode(message: T, writer?: BinaryWriter): BinaryWriter;

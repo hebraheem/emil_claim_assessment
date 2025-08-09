@@ -28,6 +28,9 @@ message Steps {
   string title = 2;
   string description = 3;
   map<string, ClaimConfigConfigDto> configs = 4;
+  optional bool fixed = 5; // Indicates if the step is fixed and cannot be removed
+  optional int32 orderingNumber = 6; // Order of the step in the form
+
 }
 
 message ClaimConfigConfigDto {
@@ -40,10 +43,109 @@ message ClaimConfigConfigDto {
   optional string validation = 7; // e.g., regex for validation
   optional  string defaultValue = 8; // Default value for the field
   optional int32 orderingNumber = 9; // Order of the field in the form
+  optional DependsOn dependsOn = 10; // Key of the field this depends on
 }
 
 message FieldOption {
   string value = 1; // The actual value of the option
   string label = 2; // The display label for the option
+}
+
+message DependsOn {
+  string key = 1; // Key of the field this depends on
+  string value = 2; // Values that this field depends on
+}
+
+
+service ClaimService {
+  rpc CreateClaim(CreateClaimRequest) returns (CreateClaimResponse);
+  rpc GetClaim(GetClaimRequest) returns (GetClaimResponse);
+  rpc GetClaims(GetClaimsRequest) returns (GetClaimsResponse);
+  rpc UpdateClaim(UpdateClaimRequest) returns (UpdateClaimResponse);
+  rpc DeleteClaim(DeleteClaimRequest) returns (DeleteClaimResponse);
+}
+
+message GetClaimsRequest {
+  // Add fields as needed, e.g., pagination or filters
+  optional int32 page = 1;
+  optional int32 pageSize = 2;
+  string userId = 3; // ID of the user to filter claims
+  string status = 4; // Status of the claims to filter
+}
+
+message Claim {
+  int32 claimId = 1;
+  string userId = 2;
+  string policyId = 3;
+  string description = 4;
+  string dateOfIncident = 5; // Date of the incident
+  string dateOfSubmission = 7; // Date when the claim was reported
+  string incidentType = 8; // Type of incident (e.g., theft, accident
+  map<string, string> attributes = 9;
+  string status = 10;
+  string createdAt = 11; // Timestamp of when the claim was created
+  string updatedAt = 12; // Timestamp of when the claim was last updated
+  optional string rejectionReason = 13; // Reason for rejection if the claim is rejected
+}
+
+message GetClaimsResponse {
+  string message = 1;
+  bool success = 2;
+  int32 status = 3; // HTTP status code
+  repeated Claim claims = 4; // List of claims
+  map<string, int32> meta = 5;
+}
+
+message GetClaimResponse {
+  string message = 1;
+  bool success = 2;
+  int32 status = 3; // HTTP status code
+  Claim claim = 4; // The retrieved claim object
+}
+
+message GetClaimRequest {
+  int32 claimId = 1; // ID of the claim to retrieve
+  string userId = 2; // ID of the user requesting the claim
+}
+
+message CreateClaimResponse {
+  string message = 1;
+  bool success = 2;
+  int32 status = 3; // HTTP status code
+  int32 claimId = 4; // ID of the created claim
+}
+
+message CreateClaimRequest {
+  string userId = 1; // ID of the user creating the claim
+  string policyId = 2; // ID of the policy associated with the claim
+  string description = 3; // Description of the claim
+  map<string, string> attributes = 4; // Additional data for the claim
+}
+
+message UpdateClaimRequest {
+  int32 claimId = 1; // ID of the claim to update
+  string userId = 2; // ID of the user updating the claim
+  string description = 3; // Updated description of the claim
+  map<string, string> attributes = 4; // Updated attributes for the claim
+  string status = 5; // Updated status of the claim
+}
+
+message DeleteClaimRequest {
+  int32 claimId = 1; // ID of the claim to be deleted
+  string userId = 2; // ID of the user requesting the deletion
+}
+
+message UpdateClaimResponse {
+  string message = 1;
+  bool success = 2;
+  int32 status = 3; // HTTP status code
+  Claim updatedClaim = 4; // The updated claim object
+  map<string, int32> meta = 5; // Additional metadata if needed
+}
+
+message DeleteClaimResponse {
+  string message = 1;
+  bool success = 2;
+  int32 status = 3; // HTTP status code
 }
 
