@@ -200,6 +200,8 @@ message DeleteClaimResponse {
 - Do not use any methods from the underlying library/framework (e.g., Express).
 - Try as much as possible to use DTOs, especially for validation.
 - Use Normal axios for data fetching (alternative would be ReactQuery - for performance optimization. However for the current implementation axios is sufficient)
+- I have not used any UI Library becuase of the app size (However for a larger app i could consider MUi, Chakra or Shadcn UI)
+- No form library has been used (Available option Formik or React-hooks-form with yup validator )
 
 ---
 

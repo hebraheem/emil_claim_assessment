@@ -10,6 +10,13 @@ const links = [
       "block px-4 py-2 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700 font-semibold transition",
   },
   {
+    name: "Create Claim",
+    href: PATHS.CREATE_CLAIM,
+    icon: "➕",
+    className:
+      "block px-4 py-2 rounded-lg bg-green-100 hover:bg-green-200 text-green-700 font-semibold transition",
+  },
+  {
     name: "Configuration",
     href: PATHS.CONFIG,
     icon: "⚙️",

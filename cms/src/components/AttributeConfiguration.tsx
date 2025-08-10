@@ -1,6 +1,20 @@
 import { ClaimConfigConfigDto, FieldOptionDto } from "../types";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { useState } from "react";
+
+const renderType = [
+  "text",
+  "number",
+  "select",
+  "checkbox",
+  "radio",
+  "date",
+  "datetime-local",
+  "email",
+  "textarea",
+  "time",
+];
 interface IAttributeConfigurationProps {
   configKey: string;
   field: ClaimConfigConfigDto;
@@ -9,7 +23,8 @@ interface IAttributeConfigurationProps {
   handleFieldChange: (
     key: string,
     field: keyof ClaimConfigConfigDto,
-    value: any
+    value: any,
+    nestedKey?: string
   ) => void;
   handleRemoveConfig: (key: string) => void;
   handleAddOption: (key: string) => void;
@@ -36,7 +51,7 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
     handleRemoveOption,
     readOnly,
   } = props;
-
+  const [hasDependency, setHasDependency] = useState(false);
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: configKey });
 
@@ -44,7 +59,7 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
     transform: CSS.Transform.toString(transform),
     transition,
   };
-
+  console.log("field :>> ", field);
   return (
     <div
       key={configKey}
@@ -135,6 +150,89 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
               />
             </div>
             <div>
+              <label className="block text-sm font-medium">
+                Validation formula
+              </label>
+              <input
+                type="text"
+                disabled={readOnly}
+                className="w-full border rounded px-2 py-1"
+                value={field.validation}
+                onChange={() =>
+                  handleFieldChange(configKey, "validation", false)
+                }
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label
+                className="block text-sm font-medium"
+                title="Depends on key and value to show this field only when the condition is met"
+              >
+                <span className="text-white bg-blue-500 rounded-full mr-2 w-4 h-4 cursor-pointer">
+                  &#x2139;
+                </span>{" "}
+                Has dependency
+              </label>
+              <input
+                type="checkbox"
+                disabled={readOnly}
+                checked={hasDependency}
+                onChange={() => setHasDependency((prev) => !prev)}
+              />
+            </div>
+            <div className={`${!hasDependency ? "hidden" : ""}`}>
+              <label
+                className="block text-sm font-medium"
+                title="The exact key of the attribute that this field depends on"
+              >
+                <span className="text-white bg-blue-500 rounded-full mr-2 w-4 h-4 cursor-pointer">
+                  &#x2139;
+                </span>
+                Depends on key
+              </label>
+
+              <input
+                type="text"
+                disabled={readOnly}
+                className="w-full border rounded px-2 py-1"
+                value={field.dependsOn?.key || ""}
+                onChange={() =>
+                  handleFieldChange(
+                    configKey,
+                    "key" as keyof ClaimConfigConfigDto,
+                    false,
+                    "dependsOn"
+                  )
+                }
+              />
+            </div>
+            <div className={`${!hasDependency ? "hidden" : ""}`}>
+              <label
+                className="block text-sm font-medium"
+                title="The exact value of the attribute that this field depends on"
+              >
+                <span className="text-white bg-blue-500 rounded-full mr-2 w-4 h-4 cursor-pointer">
+                  &#x2139;
+                </span>
+                Depends on Value
+              </label>
+
+              <input
+                type="text"
+                disabled={readOnly}
+                className="w-full border rounded px-2 py-1"
+                value={field.dependsOn?.value || ""}
+                onChange={() => {
+                  handleFieldChange(
+                    configKey,
+                    "value" as keyof ClaimConfigConfigDto,
+                    false,
+                    "dependsOn"
+                  );
+                }}
+              />
+            </div>
+            <div>
               <label className="block text-sm font-medium">Required</label>
               <div className="flex gap-4 mt-1">
                 <label className="inline-flex items-center">
@@ -163,6 +261,7 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
                 </label>
               </div>
             </div>
+
             <div>
               <label className="block text-sm font-medium">Type *</label>
               <select
@@ -174,70 +273,71 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
                   handleFieldChange(configKey, "type", e.target.value)
                 }
               >
-                {["text", "number", "select", "checkbox", "radio"].map(
-                  (type) => (
-                    <option key={type} value={type}>
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
-                    </option>
-                  )
-                )}
+                {renderType.map((type) => (
+                  <option key={type} value={type}>
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
-          {/* Editable options for select type */}
-          {field.type === "select" && (
-            <div className="mt-4">
-              <label className="block text-sm font-medium mb-2">Options</label>
-              {field.options?.map((option, idx) => (
-                <div key={idx} className="flex gap-2 mb-2">
-                  <input
-                    className="border rounded px-2 py-1 flex-1"
-                    placeholder="Value"
-                    readOnly={readOnly}
-                    value={option.value}
-                    onChange={(e) =>
-                      handleOptionChange(
-                        configKey,
-                        idx,
-                        "value",
-                        e.target.value
-                      )
-                    }
-                  />
-                  <input
-                    className="border rounded px-2 py-1 flex-1"
-                    placeholder="Label"
-                    value={option.label}
-                    readOnly={readOnly}
-                    onChange={(e) =>
-                      handleOptionChange(
-                        configKey,
-                        idx,
-                        "label",
-                        e.target.value
-                      )
-                    }
-                  />
-                  <button
-                    type="button"
-                    disabled={readOnly}
-                    className="text-red-500 font-bold px-2"
-                    onClick={() => handleRemoveOption(configKey, idx)}
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-              <button
-                type="button"
-                disabled={readOnly}
-                className="bg-green-500 text-white px-3 py-1 rounded"
-                onClick={() => handleAddOption(configKey)}
-              >
-                + Add Option
-              </button>
-            </div>
-          )}
+          {/* Editable options for specific type */}
+          {field.type === "select" ||
+            (field.type === "radio" && (
+              <div className="mt-4">
+                <label className="block text-sm font-medium mb-2">
+                  Options
+                </label>
+                {field.options?.map((option, idx) => (
+                  <div key={idx} className="flex gap-2 mb-2">
+                    <input
+                      className="border rounded px-2 py-1 flex-1"
+                      placeholder="Value"
+                      readOnly={readOnly}
+                      value={option.value}
+                      onChange={(e) =>
+                        handleOptionChange(
+                          configKey,
+                          idx,
+                          "value",
+                          e.target.value
+                        )
+                      }
+                    />
+                    <input
+                      className="border rounded px-2 py-1 flex-1"
+                      placeholder="Label"
+                      value={option.label}
+                      readOnly={readOnly}
+                      onChange={(e) =>
+                        handleOptionChange(
+                          configKey,
+                          idx,
+                          "label",
+                          e.target.value
+                        )
+                      }
+                    />
+                    <button
+                      type="button"
+                      disabled={readOnly}
+                      className="text-red-500 font-bold px-2"
+                      onClick={() => handleRemoveOption(configKey, idx)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  disabled={readOnly}
+                  className="bg-green-500 text-white px-3 py-1 rounded"
+                  onClick={() => handleAddOption(configKey)}
+                >
+                  + Add Option
+                </button>
+              </div>
+            ))}
         </div>
       )}
     </div>

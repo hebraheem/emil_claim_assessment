@@ -29,7 +29,9 @@ api.interceptors.response.use(
       // Optionally not really required as we don't have a login page
       alert("Unauthorized! Please log in.");
     }
-    return Promise.reject(error);
+    return Promise.reject(
+      error.response.data || error.message || "Unknown Error"
+    );
   }
 );
 

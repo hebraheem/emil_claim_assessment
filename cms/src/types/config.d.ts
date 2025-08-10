@@ -12,7 +12,7 @@ export interface ClaimConfigConfigDto {
   id: string; // Unique identifier for the config
   key: string;
   label: string;
-  type: "text" | "number" | "select" | "checkbox";
+  type: React.InputHTMLAttributes<HTMLInputElement>["type"];
   options: FieldOptionDto[];
   placeholder?: string;
   required?: boolean;

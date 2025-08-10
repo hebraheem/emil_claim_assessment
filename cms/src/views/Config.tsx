@@ -86,15 +86,33 @@ const Config = () => {
   const handleFieldChange = (
     key: string,
     field: keyof ClaimConfigConfigDto,
-    value: any
+    value: any,
+    nestedKey?: string
   ) => {
-    setEditedConfig((prev) => ({
-      ...prev,
-      [key]: {
-        ...prev[key],
-        [field]: value,
-      },
-    }));
+    if (nestedKey) {
+      // return {
+      //   ...prev,
+      //   attributes: {
+      //     ...prev.attributes,
+      //     [fieldKey]: value,
+      //   },
+      // };
+      // Handle nested field change
+      setEditedConfig((prev) => ({
+        ...prev,
+        [key]: {
+          ...prev[key],
+          [nestedKey]: value,
+        },
+      }));
+    } else
+      setEditedConfig((prev) => ({
+        ...prev,
+        [key]: {
+          ...prev[key],
+          [field]: value,
+        },
+      }));
   };
 
   const handleOptionChange = (

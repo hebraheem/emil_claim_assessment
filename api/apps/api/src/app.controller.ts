@@ -84,6 +84,7 @@ export class AppController {
     @Body() request: GetClaimRequest,
     @Param('claimId') claimId: string,
   ): Promise<GetClaimResponse> {
+    if (!request) request = {} as GetClaimRequest;
     request.claimId = claimId;
     return this.appService.getClaim(request);
   }
@@ -101,6 +102,7 @@ export class AppController {
     @Query('pageSize') pageSize: string,
     @Query('status') status: string,
   ): Promise<GetClaimsResponse> {
+    if (!request) request = {} as GetClaimsRequest;
     request.page = page ? parseInt(page, 10) : undefined;
     request.pageSize = pageSize ? parseInt(pageSize, 10) : undefined;
     request.status = status;
@@ -118,6 +120,7 @@ export class AppController {
     @Body() request: UpdateClaimRequest,
     @Param('claimId') claimId: string,
   ): Promise<UpdateClaimResponse> {
+    if (!request) request = {} as UpdateClaimRequest;
     request.claimId = parseInt(claimId, 10);
     return this.appService.updateClaim(request);
   }
@@ -133,6 +136,7 @@ export class AppController {
     @Body() request: DeleteClaimRequest,
     @Param('claimId') claimId: string,
   ): Promise<DeleteClaimResponse> {
+    if (!request) request = {} as DeleteClaimRequest;
     request.claimId = claimId;
     return this.appService.deleteClaim(request);
   }
