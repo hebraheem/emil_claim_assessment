@@ -8,6 +8,8 @@
 
 - https://docs.nestjs.com official documentation for nest.js
 
+- Github Copilot - to generate UI design
+
 ---
 
 # 📚 Claims gRPC - REST API
@@ -197,6 +199,7 @@ message DeleteClaimResponse {
 
 - Do not use any methods from the underlying library/framework (e.g., Express).
 - Try as much as possible to use DTOs, especially for validation.
+- Use Normal axios for data fetching (alternative would be ReactQuery - for performance optimization. However for the current implementation axios is sufficient)
 
 ---
 

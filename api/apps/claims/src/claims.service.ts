@@ -126,7 +126,7 @@ export class ClaimsService {
   async getClaim(request: GetClaimRequest): Promise<GetClaimResponse> {
     return this.prismaService.claim
       .findUnique({
-        where: { claimId: parseInt(request.claimId) },
+        where: { claimId: parseInt(request.claimId), userId: request.userId },
       })
       .then((claim) => {
         if (!claim) {

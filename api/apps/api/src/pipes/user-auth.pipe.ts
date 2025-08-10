@@ -1,4 +1,6 @@
-import { Injectable, PipeTransform, BadRequestException } from '@nestjs/common';
+import { status } from '@grpc/grpc-js';
+import { Injectable, PipeTransform } from '@nestjs/common';
+import { RpcException } from '@nestjs/microservices';
 
 /**
  * User Authentication Pipe
@@ -15,7 +17,10 @@ export class UserAuthPipe implements PipeTransform {
     }
     const userId = value['userId'] as string;
     if (!userId) {
-      throw new BadRequestException('Unauthorized: userId header is missing');
+      throw new RpcException({
+        code: status.UNAUTHENTICATED,
+        message: 'Unauthorized: userId header is missing',
+      });
     }
     return value;
   }
