@@ -10,6 +10,21 @@ import { CONFIG_STORAGE_KEY } from "../utils/constant";
 import AttributeConfiguration from "../components/AttributeConfiguration";
 import { sortObjectsByOrderingNumber } from "../utils";
 
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+
 const generateConfigId = () =>
   `config_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
 
@@ -23,6 +38,7 @@ const Config = () => {
   const [editedDescription, setEditedDescription] = useState("");
   const [openConfigs, setOpenConfigs] = useState<Record<string, boolean>>({});
   const [updated, setUpdated] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const getConfig = async () => {
@@ -58,6 +74,13 @@ const Config = () => {
       setOpenConfigs(openState);
     }
   }, [selectedStep]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const handleFieldChange = (
     key: string,
@@ -157,6 +180,37 @@ const Config = () => {
     });
   };
 
+  // Handle drag and drop reordering
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    // Get the sorted keys by orderingNumber
+    const sortedEntries = Object.entries(
+      sortObjectsByOrderingNumber(editedConfig)
+    );
+    const keys = sortedEntries.map(([key]) => key);
+
+    const oldIndex = keys.indexOf(active.id);
+    const newIndex = keys.indexOf(over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    // Reorder the keys
+    const newKeys = arrayMove(keys, oldIndex, newIndex);
+
+    // Build a new config object with updated orderingNumber
+    const newConfig: typeof editedConfig = {};
+    newKeys.forEach((key, idx) => {
+      newConfig[key] = {
+        ...editedConfig[key],
+        orderingNumber: idx + 1,
+      };
+    });
+
+    setEditedConfig(newConfig);
+  };
+
   const handleSave = async () => {
     if (!selectedStep || !config) return;
     const updatedSteps = config.data.map((step) =>
@@ -169,7 +223,7 @@ const Config = () => {
           }
         : step
     );
-
+    setLoading(true);
     await updateConfig({ request: updatedSteps })
       .then((response) => {
         if (response) {
@@ -179,10 +233,14 @@ const Config = () => {
       })
       .catch((error) => {
         alert("Error updating configuration:" + error.message);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
 
   const toggleConfig = (key: string) => {
+    console.log("key :>> ", key);
     setOpenConfigs((prev) => ({
       ...prev,
       [key]: !prev[key],
@@ -225,122 +283,136 @@ const Config = () => {
   };
 
   return (
-    <div className="flex gap-6">
-      {/* Steps Sidebar */}
-      <aside className="w-64 p-4">
-        <h3 className="font-bold text-lg mb-4 text-blue-700">Steps</h3>
-        <ul className="space-y-2">
-          {config?.data?.map((step: StepsDto) => (
-            <li key={step.title} className="flex items-center">
-              <button
-                className={`flex-1 text-left px-3 py-2 rounded-lg transition font-semibold ${
-                  selectedStep?.title === step.title
-                    ? "bg-blue-200 text-blue-900"
-                    : "bg-blue-50 hover:bg-blue-100 text-blue-700"
-                }`}
-                onClick={() => setSelectedStep(step)}
-              >
-                {step.title}
-              </button>
-              <button
-                className={`ml-2 text-red-500 hover:text-red-700 font-bold ${
-                  step?.fixed ? "hidden" : ""
-                }`}
-                title="Remove step"
-                onClick={() => handleRemoveStep(step.title)}
-                disabled={config.data.length === 1}
-                type="button"
-              >
-                ×
-              </button>
-            </li>
-          ))}
-        </ul>
-        <button
-          className="w-full text-left px-3 py-2 mt-4 rounded-lg transition font-semibold bg-blue-50 hover:bg-blue-100 text-blue-700"
-          type="button"
-          onClick={handleAddStep}
-        >
-          + Add new step
-        </button>
-      </aside>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="flex gap-6">
+        {/* Steps Sidebar */}
+        <aside className="w-64 p-4">
+          <h3 className="font-bold text-lg mb-4 text-blue-700">Steps</h3>
+          <ul className="space-y-2">
+            {config?.data?.map((step: StepsDto) => (
+              <li key={step.title} className="flex items-center">
+                <button
+                  className={`flex-1 text-left px-3 py-2 rounded-lg transition font-semibold ${
+                    selectedStep?.title === step.title
+                      ? "bg-blue-200 text-blue-900"
+                      : "bg-blue-50 hover:bg-blue-100 text-blue-700"
+                  }`}
+                  onClick={() => setSelectedStep(step)}
+                >
+                  {step.title}
+                </button>
+                <button
+                  className={`ml-2 text-red-500 hover:text-red-700 font-bold ${
+                    step?.fixed ? "hidden" : ""
+                  }`}
+                  title="Remove step"
+                  onClick={() => handleRemoveStep(step.title)}
+                  disabled={config.data.length === 1}
+                  type="button"
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ul>
+          <button
+            className="w-full text-left px-3 py-2 mt-4 rounded-lg transition font-semibold bg-blue-50 hover:bg-blue-100 text-blue-700"
+            type="button"
+            onClick={handleAddStep}
+          >
+            + Add new step
+          </button>
+        </aside>
 
-      {/* Config Editor */}
-      <section className="flex-1 p-3">
-        {selectedStep ? (
-          <React.Fragment>
-            <h2 className="text-2xl font-bold mb-4">{editedTitle}</h2>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSave();
-              }}
-              className="space-y-6"
-            >
-              <div className="mb-4">
-                <label className="block text-sm font-medium">
-                  Step Title *
-                </label>
-                <input
-                  className="w-full border rounded px-2 py-1"
-                  value={editedTitle}
-                  required
-                  readOnly={selectedStep?.fixed}
-                  onChange={(e) => setEditedTitle(e.target.value)}
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium">
-                  Step Description *
-                </label>
-                <input
-                  className="w-full border rounded px-2 py-1"
-                  value={editedDescription}
-                  required
-                  readOnly={selectedStep?.fixed}
-                  onChange={(e) => setEditedDescription(e.target.value)}
-                />
-              </div>
-              <button
-                type="button"
-                disabled={selectedStep?.fixed}
-                className="mb-4 bg-blue-100 hover:bg-blue-200 text-blue-700 font-semibold px-4 py-2 rounded"
-                onClick={handleAddConfig}
+        {/* Config Editor */}
+        <section className="flex-1 p-3">
+          {selectedStep ? (
+            <React.Fragment>
+              <h2 className="text-2xl font-bold mb-4">{editedTitle}</h2>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSave();
+                }}
+                className="space-y-6"
               >
-                + Add Config
-              </button>
-              {Object.entries(sortObjectsByOrderingNumber(editedConfig)).map(
-                ([key, field]) => (
-                  <AttributeConfiguration
-                    key={key}
-                    configKey={key}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium">
+                    Step Title *
+                  </label>
+                  <input
+                    className="w-full border rounded px-2 py-1"
+                    value={editedTitle}
+                    required
                     readOnly={selectedStep?.fixed}
-                    field={field}
-                    toggleConfig={toggleConfig}
-                    openConfigs={openConfigs}
-                    handleRemoveConfig={handleRemoveConfig}
-                    handleFieldChange={handleFieldChange}
-                    handleOptionChange={handleOptionChange}
-                    handleAddOption={handleAddOption}
-                    handleRemoveOption={handleRemoveOption}
+                    onChange={(e) => setEditedTitle(e.target.value)}
                   />
-                )
-              )}
-              <button
-                type="submit"
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition"
-              >
-                Save
-              </button>
-            </form>
-          </React.Fragment>
-        ) : (
-          <div className="text-gray-500">
-            Select a step to edit its configuration.
-          </div>
-        )}
-      </section>
-    </div>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium">
+                    Step Description *
+                  </label>
+                  <input
+                    className="w-full border rounded px-2 py-1"
+                    value={editedDescription}
+                    required
+                    readOnly={selectedStep?.fixed}
+                    onChange={(e) => setEditedDescription(e.target.value)}
+                  />
+                </div>
+                <button
+                  type="button"
+                  disabled={selectedStep?.fixed}
+                  className="mb-4 bg-blue-100 hover:bg-blue-200 text-blue-700 font-semibold px-4 py-2 rounded"
+                  onClick={handleAddConfig}
+                >
+                  + Add Config
+                </button>
+                <SortableContext
+                  items={Object.values(
+                    sortObjectsByOrderingNumber(selectedStep.configs)
+                  ).map((item) => item.key)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {Object.entries(
+                    sortObjectsByOrderingNumber(editedConfig)
+                  ).map(([key, field]) => (
+                    <AttributeConfiguration
+                      key={key}
+                      configKey={key}
+                      readOnly={selectedStep?.fixed}
+                      field={field}
+                      toggleConfig={toggleConfig}
+                      openConfigs={openConfigs}
+                      handleRemoveConfig={handleRemoveConfig}
+                      handleFieldChange={handleFieldChange}
+                      handleOptionChange={handleOptionChange}
+                      handleAddOption={handleAddOption}
+                      handleRemoveOption={handleRemoveOption}
+                    />
+                  ))}
+                </SortableContext>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition"
+                >
+                  {!loading ? "Save" : "Saving..."}
+                </button>
+              </form>
+            </React.Fragment>
+          ) : (
+            <div className="text-gray-500">
+              Select a step to edit its configuration.
+            </div>
+          )}
+        </section>
+      </div>
+    </DndContext>
   );
 };
 

@@ -1,5 +1,6 @@
 import { ClaimConfigConfigDto, FieldOptionDto } from "../types";
-
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 interface IAttributeConfigurationProps {
   configKey: string;
   field: ClaimConfigConfigDto;
@@ -36,18 +37,42 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
     readOnly,
   } = props;
 
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: configKey });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
   return (
-    <div key={configKey} className="border-b pb-2 mb-1">
+    <div
+      key={configKey}
+      className="border-b pb-2 mb-1"
+      style={style}
+      {...attributes}
+      ref={setNodeRef}
+    >
       <div className="flex items-center justify-between">
         <button
           type="button"
-          className="flex items-center w-full justify-between py-2 px-2 rounded bg-gray-100 hover:bg-gray-200 font-semibold text-left"
+          className="flex w-full justify-between py-2 px-2 rounded bg-gray-100 hover:bg-gray-200 font-semibold text-left"
           onClick={() => toggleConfig(configKey)}
         >
-          <span>{field.label || configKey}</span>
-          <span className="ml-2 text-xl">
-            {openConfigs[configKey] ? "−" : "+"}
-          </span>
+          <div>
+            <span
+              {...listeners}
+              className="cursor-grab active:cursor-grabbing pr-3"
+            >
+              ⠿
+            </span>
+            <span>{field.label || configKey}</span>
+          </div>
+          <div>
+            <span className="ml-2 text-xl">
+              {openConfigs[configKey] ? "−" : "+"}
+            </span>
+          </div>
         </button>
         <button
           type="button"
