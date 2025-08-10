@@ -42,6 +42,7 @@ export class AppController {
    * @returns {Promise<ClaimConfigResponseDto>} A promise that resolves to ClaimConfigResponseDto containing the configuration data.
    */
   @Get('config')
+  @UsePipes(UserAuthPipe)
   getConfig(): Promise<ClaimConfigResponseDto> {
     return this.appService.getConfig();
   }
