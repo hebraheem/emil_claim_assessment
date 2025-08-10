@@ -24,6 +24,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import ConfigSteps from "../components/ConfigSteps";
 
 const generateConfigId = () =>
   `config_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
@@ -180,7 +181,7 @@ const Config = () => {
     });
   };
 
-  // Handle drag and drop reordering
+  // Handle drag and drop reordering for attribute config
   const handleDragEnd = (event: any) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -209,6 +210,34 @@ const Config = () => {
     });
 
     setEditedConfig(newConfig);
+  };
+
+  const sortStepsByOrderingNumber = (steps: StepsDto[]) =>
+    [...steps].sort(
+      (a, b) => (a.orderingNumber || 0) - (b.orderingNumber || 0)
+    );
+
+  // Handle drag and drop reordering for steps
+  const handleStepDragEnd = (event: any) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id || !config) return;
+
+    const sortedSteps = sortStepsByOrderingNumber(config.data);
+    const keys = sortedSteps.map((step) => step.title); // or step.id if available
+
+    const oldIndex = keys.indexOf(active.id);
+    const newIndex = keys.indexOf(over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const newSteps = arrayMove(sortedSteps, oldIndex, newIndex).map(
+      (step, idx) => ({
+        ...step,
+        orderingNumber: idx + 1,
+      })
+    );
+
+    setConfig({ ...config, data: newSteps });
   };
 
   const handleSave = async () => {
@@ -240,7 +269,6 @@ const Config = () => {
   };
 
   const toggleConfig = (key: string) => {
-    console.log("key :>> ", key);
     setOpenConfigs((prev) => ({
       ...prev,
       [key]: !prev[key],
@@ -253,6 +281,7 @@ const Config = () => {
     const newStep: StepsDto = {
       title: "New Step " + (config.data.length + 1),
       description: "",
+      orderingNumber: config.data.length + 1,
       configs: {
         [generateConfigId()]: {
           id: generateConfigId(),
@@ -290,43 +319,43 @@ const Config = () => {
     >
       <div className="flex gap-6">
         {/* Steps Sidebar */}
-        <aside className="w-64 p-4">
-          <h3 className="font-bold text-lg mb-4 text-blue-700">Steps</h3>
-          <ul className="space-y-2">
-            {config?.data?.map((step: StepsDto) => (
-              <li key={step.title} className="flex items-center">
-                <button
-                  className={`flex-1 text-left px-3 py-2 rounded-lg transition font-semibold ${
-                    selectedStep?.title === step.title
-                      ? "bg-blue-200 text-blue-900"
-                      : "bg-blue-50 hover:bg-blue-100 text-blue-700"
-                  }`}
-                  onClick={() => setSelectedStep(step)}
-                >
-                  {step.title}
-                </button>
-                <button
-                  className={`ml-2 text-red-500 hover:text-red-700 font-bold ${
-                    step?.fixed ? "hidden" : ""
-                  }`}
-                  title="Remove step"
-                  onClick={() => handleRemoveStep(step.title)}
-                  disabled={config.data.length === 1}
-                  type="button"
-                >
-                  ×
-                </button>
-              </li>
-            ))}
-          </ul>
-          <button
-            className="w-full text-left px-3 py-2 mt-4 rounded-lg transition font-semibold bg-blue-50 hover:bg-blue-100 text-blue-700"
-            type="button"
-            onClick={handleAddStep}
-          >
-            + Add new step
-          </button>
-        </aside>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleStepDragEnd}
+        >
+          <aside className="w-64 p-4">
+            <h3 className="font-bold text-lg mb-4 text-blue-700">Steps</h3>
+            <SortableContext
+              items={sortStepsByOrderingNumber(config?.data || []).map(
+                (step) => step.title
+              )}
+              strategy={verticalListSortingStrategy}
+            >
+              <ul className="space-y-2">
+                {sortStepsByOrderingNumber(config?.data || []).map(
+                  (step: StepsDto) => (
+                    <ConfigSteps
+                      key={step.title}
+                      step={step}
+                      selectedStep={selectedStep}
+                      setSelectedStep={setSelectedStep}
+                      handleRemoveStep={handleRemoveStep}
+                      config={config}
+                    />
+                  )
+                )}
+              </ul>
+            </SortableContext>
+            <button
+              className="w-full text-left px-3 py-2 mt-4 rounded-lg transition font-semibold bg-blue-50 hover:bg-blue-100 text-blue-700"
+              type="button"
+              onClick={handleAddStep}
+            >
+              + Add new step
+            </button>
+          </aside>
+        </DndContext>
 
         {/* Config Editor */}
         <section className="flex-1 p-3">

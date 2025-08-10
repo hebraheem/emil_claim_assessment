@@ -26,7 +26,7 @@ const Layout = () => {
           🎨 Claim Assessment
         </h1>
       </header>
-      <main className="max-w-5xl mx-auto px-4">
+      <main className="max-w-6xl mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <aside className="md:col-span-1 bg-white/80 rounded-xl shadow p-6 flex flex-col items-center max-h-96">
             <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-pink-400 to-blue-400 flex items-center justify-center mb-4">
