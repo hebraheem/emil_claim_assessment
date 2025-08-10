@@ -3,9 +3,11 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
   Patch,
   Post,
   Put,
+  Query,
   UsePipes,
 } from '@nestjs/common';
 import { AppService } from './app.service';
@@ -75,9 +77,13 @@ export class AppController {
    * @param {GetClaimRequest} request - The request object for getting a claim.
    * @returns {Promise<GetClaimResponse>} A promise that resolves to GetClaimResponseDto containing the claim data.
    */
-  @Get(':claimId')
   @UsePipes(UserAuthPipe)
-  async getClaim(@Body() request: GetClaimRequest): Promise<GetClaimResponse> {
+  @Get(':claimId')
+  async getClaim(
+    @Body() request: GetClaimRequest,
+    @Param('claimId') claimId: string,
+  ): Promise<GetClaimResponse> {
+    request.claimId = claimId;
     return this.appService.getClaim(request);
   }
 
@@ -90,7 +96,13 @@ export class AppController {
   @UsePipes(UserAuthPipe)
   async getClaims(
     @Body() request: GetClaimsRequest,
+    @Query('page') page: string,
+    @Query('pageSize') pageSize: string,
+    @Query('status') status: string,
   ): Promise<GetClaimsResponse> {
+    request.page = page ? parseInt(page, 10) : undefined;
+    request.pageSize = pageSize ? parseInt(pageSize, 10) : undefined;
+    request.status = status;
     return this.appService.getClaims(request);
   }
 
@@ -103,7 +115,9 @@ export class AppController {
   @UsePipes(UserAuthPipe, new GrpcValidationPipe(UpdateClaimRequestDto))
   async updateClaim(
     @Body() request: UpdateClaimRequest,
+    @Param('claimId') claimId: string,
   ): Promise<UpdateClaimResponse> {
+    request.claimId = parseInt(claimId, 10);
     return this.appService.updateClaim(request);
   }
 
@@ -116,7 +130,9 @@ export class AppController {
   @UsePipes(UserAuthPipe, new GrpcValidationPipe(DeleteClaimRequestDto))
   async deleteClaim(
     @Body() request: DeleteClaimRequest,
+    @Param('claimId') claimId: string,
   ): Promise<DeleteClaimResponse> {
+    request.claimId = claimId;
     return this.appService.deleteClaim(request);
   }
 }

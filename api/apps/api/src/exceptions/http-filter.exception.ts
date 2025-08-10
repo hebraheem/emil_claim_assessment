@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { Response } from 'express';
+import { status as statusCode } from '@grpc/grpc-js';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -39,6 +40,19 @@ export class HttpExceptionFilter implements ExceptionFilter {
         message = resObj.message ?? message;
         details = resObj.errors ?? null;
       }
+    }
+    // Handle other UNKNOWN errors
+    else if (exception instanceof Error) {
+      message = exception.message || 'An unexpected error occurred';
+      status =
+        {
+          [statusCode.NOT_FOUND]: HttpStatus.NOT_FOUND,
+          [statusCode.UNKNOWN]: HttpStatus.BAD_REQUEST,
+          [statusCode.INVALID_ARGUMENT]: HttpStatus.BAD_REQUEST,
+          [statusCode.PERMISSION_DENIED]: HttpStatus.FORBIDDEN,
+          [statusCode.UNAUTHENTICATED]: HttpStatus.UNAUTHORIZED,
+          [statusCode.ALREADY_EXISTS]: HttpStatus.CONFLICT,
+        }[exception.message.charAt(0)] || HttpStatus.INTERNAL_SERVER_ERROR;
     }
     // Handle non-HttpException structured errors (like validation)
     else if (typeof exception === 'object' && exception !== null) {

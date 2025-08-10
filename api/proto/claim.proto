@@ -66,11 +66,10 @@ service ClaimService {
 }
 
 message GetClaimsRequest {
-  // Add fields as needed, e.g., pagination or filters
   optional int32 page = 1;
   optional int32 pageSize = 2;
-  string userId = 3; // ID of the user to filter claims
-  string status = 4; // Status of the claims to filter
+  string status = 3; // Status of the claims to filter
+  string userId = 4; // ID of the user to filter claims
 }
 
 message Claim {
@@ -104,7 +103,7 @@ message GetClaimResponse {
 }
 
 message GetClaimRequest {
-  int32 claimId = 1; // ID of the claim to retrieve
+  string claimId = 1;
   string userId = 2; // ID of the user requesting the claim
 }
 
@@ -120,6 +119,13 @@ message CreateClaimRequest {
   string policyId = 2; // ID of the policy associated with the claim
   string description = 3; // Description of the claim
   map<string, string> attributes = 4; // Additional data for the claim
+  string dateOfIncident = 5; // Date of the incident
+  string dateOfSubmission = 6; // Date when the claim was reported
+  string incidentType = 7; // Type of incident (e.g., theft, accident)
+  string status = 8; // Initial status of the claim (e.g., pending, approved, rejected)
+  string createdAt = 9; // Timestamp of when the claim was created
+  string updatedAt = 10; // Timestamp of when the claim was last updated
+  optional string rejectionReason = 11; // Reason for rejection if the claim is rejecte
 }
 
 message UpdateClaimRequest {
@@ -128,11 +134,16 @@ message UpdateClaimRequest {
   string description = 3; // Updated description of the claim
   map<string, string> attributes = 4; // Updated attributes for the claim
   string status = 5; // Updated status of the claim
+  string dateOfIncident = 6; // Updated date of the incident
+  string dateOfSubmission = 7; // Updated date when the claim was reported
+  string incidentType = 8; // Updated type of incident (e.g., theft, accident)
+  optional string rejectionReason = 9; // Updated reason for rejection if the claim is rejected
+  optional string updatedAt = 10; // Timestamp of when the claim was last updated
 }
 
 message DeleteClaimRequest {
-  int32 claimId = 1; // ID of the claim to be deleted
-  string userId = 2; // ID of the user requesting the deletion
+  string userId = 1; // ID of the user requesting the deletion
+  string claimId = 2;
 }
 
 message UpdateClaimResponse {
@@ -140,7 +151,6 @@ message UpdateClaimResponse {
   bool success = 2;
   int32 status = 3; // HTTP status code
   Claim updatedClaim = 4; // The updated claim object
-  map<string, int32> meta = 5; // Additional metadata if needed
 }
 
 message DeleteClaimResponse {

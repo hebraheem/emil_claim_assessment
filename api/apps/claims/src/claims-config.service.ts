@@ -6,7 +6,12 @@ import * as fs from 'fs';
 
 @Injectable()
 export class ClaimsConfigService {
-  private filePath = path.join('../', 'storage', 'claim-config.json');
+  private filePath = path.join(
+    process.cwd(), // root where you run "yarn start" or "npm run start:dev"
+    'apps',
+    'configData',
+    'claim-config.json',
+  );
 
   /**
    * Retrieves the claim configuration.
@@ -28,7 +33,7 @@ export class ClaimsConfigService {
 
       return Promise.resolve({
         data: body.request,
-        message: `Config saved to ${this.filePath}`,
+        message: `Config saved successfully`,
         success: true,
         status: 200,
       });

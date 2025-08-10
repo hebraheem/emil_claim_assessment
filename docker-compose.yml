@@ -1,19 +1,19 @@
 services:
-  # api:
-  #   build:
-  #     context: ./api
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "5172:5172"
-  #     - "50051:50051"
-  #   env_file:
-  #     - ./api/.env
-  #   environment:
-  #     NODE_ENV: production
-  #   depends_on:
-  #     - db
-  #   networks:
-  #     - app_network
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "5172:5172"
+      - "50051:50051"
+    env_file:
+      - ./api/.env
+    environment:
+      NODE_ENV: production
+    depends_on:
+      - db
+    networks:
+      - app_network
 
   db:
     image: postgres:latest
@@ -30,31 +30,31 @@ services:
     networks:
       - app_network
 
-  # cms:
-  #   build:
-  #     context: ./cms
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "5173:5173"
-  #   depends_on:
-  #     - api
-  #   volumes:
-  #     - ./cms:/app
-  #   networks:
-  #     - app_network
+  cms:
+    build:
+      context: ./cms
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+    volumes:
+      - ./cms:/app
+    networks:
+      - app_network
 
-  # widget:
-  #   build:
-  #     context: ./widget
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "5174:5174"
-  #   depends_on:
-  #     - api
-  #   volumes:
-  #     - ./widget:/app
-  #   networks:
-  #     - app_network
+  widget:
+    build:
+      context: ./widget
+      dockerfile: Dockerfile
+    ports:
+      - "5174:5174"
+    depends_on:
+      - api
+    volumes:
+      - ./widget:/app
+    networks:
+      - app_network
 
 volumes:
   db_data:

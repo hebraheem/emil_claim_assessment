@@ -10,7 +10,7 @@ import {
   ClaimConfigUpdateRequestDto,
 } from 'proto';
 
-@Controller('claims-config')
+@Controller()
 @ClaimConfigServiceControllerMethods()
 export class ClaimsConfigController implements ClaimConfigServiceController {
   constructor(private readonly claimsConfigService: ClaimsConfigService) {}

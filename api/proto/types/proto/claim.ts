@@ -87,13 +87,14 @@ export interface DependsOn {
 }
 
 export interface GetClaimsRequest {
-  /** Add fields as needed, e.g., pagination or filters */
-  page: number;
-  pageSize: number;
-  /** ID of the user to filter claims */
-  userId: string;
+  page?: number | undefined;
+  pageSize?:
+    | number
+    | undefined;
   /** Status of the claims to filter */
   status: string;
+  /** ID of the user to filter claims */
+  userId: string;
 }
 
 export interface Claim {
@@ -147,8 +148,7 @@ export interface GetClaimResponse {
 }
 
 export interface GetClaimRequest {
-  /** ID of the claim to retrieve */
-  claimId: number;
+  claimId: string;
   /** ID of the user requesting the claim */
   userId: string;
 }
@@ -171,6 +171,20 @@ export interface CreateClaimRequest {
   description: string;
   /** Additional data for the claim */
   attributes: { [key: string]: string };
+  /** Date of the incident */
+  dateOfIncident: string;
+  /** Date when the claim was reported */
+  dateOfSubmission: string;
+  /** Type of incident (e.g., theft, accident) */
+  incidentType: string;
+  /** Initial status of the claim (e.g., pending, approved, rejected) */
+  status: string;
+  /** Timestamp of when the claim was created */
+  createdAt: string;
+  /** Timestamp of when the claim was last updated */
+  updatedAt: string;
+  /** Reason for rejection if the claim is rejecte */
+  rejectionReason?: string | undefined;
 }
 
 export interface CreateClaimRequest_AttributesEntry {
@@ -189,6 +203,18 @@ export interface UpdateClaimRequest {
   attributes: { [key: string]: string };
   /** Updated status of the claim */
   status: string;
+  /** Updated date of the incident */
+  dateOfIncident: string;
+  /** Updated date when the claim was reported */
+  dateOfSubmission: string;
+  /** Updated type of incident (e.g., theft, accident) */
+  incidentType: string;
+  /** Updated reason for rejection if the claim is rejected */
+  rejectionReason?:
+    | string
+    | undefined;
+  /** Timestamp of when the claim was last updated */
+  updatedAt?: string | undefined;
 }
 
 export interface UpdateClaimRequest_AttributesEntry {
@@ -197,10 +223,9 @@ export interface UpdateClaimRequest_AttributesEntry {
 }
 
 export interface DeleteClaimRequest {
-  /** ID of the claim to be deleted */
-  claimId: number;
   /** ID of the user requesting the deletion */
   userId: string;
+  claimId: string;
 }
 
 export interface UpdateClaimResponse {
@@ -209,16 +234,7 @@ export interface UpdateClaimResponse {
   /** HTTP status code */
   status: number;
   /** The updated claim object */
-  updatedClaim:
-    | Claim
-    | undefined;
-  /** Additional metadata if needed */
-  meta: { [key: string]: number };
-}
-
-export interface UpdateClaimResponse_MetaEntry {
-  key: string;
-  value: number;
+  updatedClaim: Claim | undefined;
 }
 
 export interface DeleteClaimResponse {
@@ -750,22 +766,22 @@ export const DependsOn: MessageFns<DependsOn> = {
 };
 
 function createBaseGetClaimsRequest(): GetClaimsRequest {
-  return { page: 0, pageSize: 0, userId: "", status: "" };
+  return { status: "", userId: "" };
 }
 
 export const GetClaimsRequest: MessageFns<GetClaimsRequest> = {
   encode(message: GetClaimsRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.page !== 0) {
+    if (message.page !== undefined) {
       writer.uint32(8).int32(message.page);
     }
-    if (message.pageSize !== 0) {
+    if (message.pageSize !== undefined) {
       writer.uint32(16).int32(message.pageSize);
     }
-    if (message.userId !== "") {
-      writer.uint32(26).string(message.userId);
-    }
     if (message.status !== "") {
-      writer.uint32(34).string(message.status);
+      writer.uint32(26).string(message.status);
+    }
+    if (message.userId !== "") {
+      writer.uint32(34).string(message.userId);
     }
     return writer;
   },
@@ -798,7 +814,7 @@ export const GetClaimsRequest: MessageFns<GetClaimsRequest> = {
             break;
           }
 
-          message.userId = reader.string();
+          message.status = reader.string();
           continue;
         }
         case 4: {
@@ -806,7 +822,7 @@ export const GetClaimsRequest: MessageFns<GetClaimsRequest> = {
             break;
           }
 
-          message.status = reader.string();
+          message.userId = reader.string();
           continue;
         }
       }
@@ -1243,13 +1259,13 @@ export const GetClaimResponse: MessageFns<GetClaimResponse> = {
 };
 
 function createBaseGetClaimRequest(): GetClaimRequest {
-  return { claimId: 0, userId: "" };
+  return { claimId: "", userId: "" };
 }
 
 export const GetClaimRequest: MessageFns<GetClaimRequest> = {
   encode(message: GetClaimRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.claimId !== 0) {
-      writer.uint32(8).int32(message.claimId);
+    if (message.claimId !== "") {
+      writer.uint32(10).string(message.claimId);
     }
     if (message.userId !== "") {
       writer.uint32(18).string(message.userId);
@@ -1265,11 +1281,11 @@ export const GetClaimRequest: MessageFns<GetClaimRequest> = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.claimId = reader.int32();
+          message.claimId = reader.string();
           continue;
         }
         case 2: {
@@ -1361,7 +1377,18 @@ export const CreateClaimResponse: MessageFns<CreateClaimResponse> = {
 };
 
 function createBaseCreateClaimRequest(): CreateClaimRequest {
-  return { userId: "", policyId: "", description: "", attributes: {} };
+  return {
+    userId: "",
+    policyId: "",
+    description: "",
+    attributes: {},
+    dateOfIncident: "",
+    dateOfSubmission: "",
+    incidentType: "",
+    status: "",
+    createdAt: "",
+    updatedAt: "",
+  };
 }
 
 export const CreateClaimRequest: MessageFns<CreateClaimRequest> = {
@@ -1378,6 +1405,27 @@ export const CreateClaimRequest: MessageFns<CreateClaimRequest> = {
     Object.entries(message.attributes).forEach(([key, value]) => {
       CreateClaimRequest_AttributesEntry.encode({ key: key as any, value }, writer.uint32(34).fork()).join();
     });
+    if (message.dateOfIncident !== "") {
+      writer.uint32(42).string(message.dateOfIncident);
+    }
+    if (message.dateOfSubmission !== "") {
+      writer.uint32(50).string(message.dateOfSubmission);
+    }
+    if (message.incidentType !== "") {
+      writer.uint32(58).string(message.incidentType);
+    }
+    if (message.status !== "") {
+      writer.uint32(66).string(message.status);
+    }
+    if (message.createdAt !== "") {
+      writer.uint32(74).string(message.createdAt);
+    }
+    if (message.updatedAt !== "") {
+      writer.uint32(82).string(message.updatedAt);
+    }
+    if (message.rejectionReason !== undefined) {
+      writer.uint32(90).string(message.rejectionReason);
+    }
     return writer;
   },
 
@@ -1421,6 +1469,62 @@ export const CreateClaimRequest: MessageFns<CreateClaimRequest> = {
           if (entry4.value !== undefined) {
             message.attributes[entry4.key] = entry4.value;
           }
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.dateOfIncident = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.dateOfSubmission = reader.string();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.incidentType = reader.string();
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.status = reader.string();
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.createdAt = reader.string();
+          continue;
+        }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.updatedAt = reader.string();
+          continue;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.rejectionReason = reader.string();
           continue;
         }
       }
@@ -1482,7 +1586,16 @@ export const CreateClaimRequest_AttributesEntry: MessageFns<CreateClaimRequest_A
 };
 
 function createBaseUpdateClaimRequest(): UpdateClaimRequest {
-  return { claimId: 0, userId: "", description: "", attributes: {}, status: "" };
+  return {
+    claimId: 0,
+    userId: "",
+    description: "",
+    attributes: {},
+    status: "",
+    dateOfIncident: "",
+    dateOfSubmission: "",
+    incidentType: "",
+  };
 }
 
 export const UpdateClaimRequest: MessageFns<UpdateClaimRequest> = {
@@ -1501,6 +1614,21 @@ export const UpdateClaimRequest: MessageFns<UpdateClaimRequest> = {
     });
     if (message.status !== "") {
       writer.uint32(42).string(message.status);
+    }
+    if (message.dateOfIncident !== "") {
+      writer.uint32(50).string(message.dateOfIncident);
+    }
+    if (message.dateOfSubmission !== "") {
+      writer.uint32(58).string(message.dateOfSubmission);
+    }
+    if (message.incidentType !== "") {
+      writer.uint32(66).string(message.incidentType);
+    }
+    if (message.rejectionReason !== undefined) {
+      writer.uint32(74).string(message.rejectionReason);
+    }
+    if (message.updatedAt !== undefined) {
+      writer.uint32(82).string(message.updatedAt);
     }
     return writer;
   },
@@ -1553,6 +1681,46 @@ export const UpdateClaimRequest: MessageFns<UpdateClaimRequest> = {
           }
 
           message.status = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.dateOfIncident = reader.string();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.dateOfSubmission = reader.string();
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.incidentType = reader.string();
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.rejectionReason = reader.string();
+          continue;
+        }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.updatedAt = reader.string();
           continue;
         }
       }
@@ -1614,16 +1782,16 @@ export const UpdateClaimRequest_AttributesEntry: MessageFns<UpdateClaimRequest_A
 };
 
 function createBaseDeleteClaimRequest(): DeleteClaimRequest {
-  return { claimId: 0, userId: "" };
+  return { userId: "", claimId: "" };
 }
 
 export const DeleteClaimRequest: MessageFns<DeleteClaimRequest> = {
   encode(message: DeleteClaimRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.claimId !== 0) {
-      writer.uint32(8).int32(message.claimId);
-    }
     if (message.userId !== "") {
-      writer.uint32(18).string(message.userId);
+      writer.uint32(10).string(message.userId);
+    }
+    if (message.claimId !== "") {
+      writer.uint32(18).string(message.claimId);
     }
     return writer;
   },
@@ -1636,11 +1804,11 @@ export const DeleteClaimRequest: MessageFns<DeleteClaimRequest> = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.claimId = reader.int32();
+          message.userId = reader.string();
           continue;
         }
         case 2: {
@@ -1648,7 +1816,7 @@ export const DeleteClaimRequest: MessageFns<DeleteClaimRequest> = {
             break;
           }
 
-          message.userId = reader.string();
+          message.claimId = reader.string();
           continue;
         }
       }
@@ -1662,7 +1830,7 @@ export const DeleteClaimRequest: MessageFns<DeleteClaimRequest> = {
 };
 
 function createBaseUpdateClaimResponse(): UpdateClaimResponse {
-  return { message: "", success: false, status: 0, updatedClaim: undefined, meta: {} };
+  return { message: "", success: false, status: 0, updatedClaim: undefined };
 }
 
 export const UpdateClaimResponse: MessageFns<UpdateClaimResponse> = {
@@ -1679,9 +1847,6 @@ export const UpdateClaimResponse: MessageFns<UpdateClaimResponse> = {
     if (message.updatedClaim !== undefined) {
       Claim.encode(message.updatedClaim, writer.uint32(34).fork()).join();
     }
-    Object.entries(message.meta).forEach(([key, value]) => {
-      UpdateClaimResponse_MetaEntry.encode({ key: key as any, value }, writer.uint32(42).fork()).join();
-    });
     return writer;
   },
 
@@ -1722,65 +1887,6 @@ export const UpdateClaimResponse: MessageFns<UpdateClaimResponse> = {
           }
 
           message.updatedClaim = Claim.decode(reader, reader.uint32());
-          continue;
-        }
-        case 5: {
-          if (tag !== 42) {
-            break;
-          }
-
-          const entry5 = UpdateClaimResponse_MetaEntry.decode(reader, reader.uint32());
-          if (entry5.value !== undefined) {
-            message.meta[entry5.key] = entry5.value;
-          }
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-};
-
-function createBaseUpdateClaimResponse_MetaEntry(): UpdateClaimResponse_MetaEntry {
-  return { key: "", value: 0 };
-}
-
-export const UpdateClaimResponse_MetaEntry: MessageFns<UpdateClaimResponse_MetaEntry> = {
-  encode(message: UpdateClaimResponse_MetaEntry, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.key !== "") {
-      writer.uint32(10).string(message.key);
-    }
-    if (message.value !== 0) {
-      writer.uint32(16).int32(message.value);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): UpdateClaimResponse_MetaEntry {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseUpdateClaimResponse_MetaEntry();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.key = reader.string();
-          continue;
-        }
-        case 2: {
-          if (tag !== 16) {
-            break;
-          }
-
-          message.value = reader.int32();
           continue;
         }
       }

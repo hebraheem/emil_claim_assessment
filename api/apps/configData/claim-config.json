@@ -1,7 +1,6 @@
 [
   {
     "title": "Claim Information",
-    "fixed": true,
     "description": "Give a brief description of the claim",
     "configs": {
       "incidentType": {
@@ -20,6 +19,14 @@
           {
             "value": "FLOOD",
             "label": "Flood"
+          },
+          {
+            "value": "HOUSE_HOLD",
+            "label": "Household content"
+          },
+          {
+            "value": "BICYCLE",
+            "label": "Bicycle"
           }
         ],
         "placeholder": "Select incident type",
@@ -34,16 +41,16 @@
         "type": "select",
         "options": [
           {
-            "value": "PENDING",
-            "label": "Pending"
+            "value": "OPEN",
+            "label": "Open"
           },
           {
-            "value": "APPROVED",
-            "label": "Approved"
+            "value": "IN_REVIEW",
+            "label": "In Review"
           },
           {
-            "value": "REJECTED",
-            "label": "Rejected"
+            "value": "CLOSED",
+            "label": "Closed"
           }
         ],
         "placeholder": "",
@@ -63,7 +70,7 @@
         "orderingNumber": 6,
         "dependsOn": {
           "key": "status",
-          "value": ["REJECTED"]
+          "value": "REJECTED"
         }
       },
       "description": {
@@ -120,7 +127,8 @@
         "defaultValue": "",
         "orderingNumber": 1
       }
-    }
+    },
+    "fixed": true
   },
   {
     "title": "Processing Information",
@@ -163,7 +171,7 @@
         "placeholder": "Enter your email address",
         "required": false,
         "validation": "",
-        "defaultValue": false,
+        "defaultValue": "false",
         "orderingNumber": 5
       },
       "policeReportDetails": {
@@ -177,7 +185,7 @@
         "orderingNumber": 6,
         "dependsOn": {
           "key": "hasPoliceReport",
-          "value": true
+          "value": "true"
         }
       }
     }

@@ -62,6 +62,15 @@ export class CreateClaimRequestDto {
 
   @IsObject()
   attributes: Record<string, string>;
+
+  @IsString()
+  dateOfIncident: string;
+
+  @IsString()
+  dateOfSubmission: string;
+
+  @IsString()
+  incidentType: string;
 }
 
 // CreateClaimResponse DTO
@@ -182,8 +191,7 @@ export class UpdateClaimResponseDto {
 
 // DeleteClaimRequest DTO
 export class DeleteClaimRequestDto {
-  @IsInt()
-  claimId: number;
+  claimId: number | string;
 
   @IsString()
   userId: string;

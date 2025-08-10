@@ -10,9 +10,12 @@ import { Injectable, PipeTransform, BadRequestException } from '@nestjs/common';
 @Injectable()
 export class UserAuthPipe implements PipeTransform {
   transform(value: { metadata: unknown; headers?: unknown }) {
+    if (typeof value !== 'object') {
+      return value;
+    }
     const userId = value['userId'] as string;
     if (!userId) {
-      throw new BadRequestException('Missing x-userId header');
+      throw new BadRequestException('Unauthorized: userId header is missing');
     }
     return value;
   }

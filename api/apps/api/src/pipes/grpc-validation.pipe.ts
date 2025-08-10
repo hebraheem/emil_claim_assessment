@@ -18,6 +18,9 @@ export class GrpcValidationPipe implements PipeTransform<any> {
   constructor(private readonly dto?: unknown) {} // Optional DTO for validation
 
   async transform(value: unknown, metadata: ArgumentMetadata) {
+    if (typeof value !== 'object') {
+      return value;
+    }
     try {
       const metatype = this.dto || metadata.metatype;
       if (
