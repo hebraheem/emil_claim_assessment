@@ -13,6 +13,8 @@ api.interceptors.request.use(
     const userId = localStorage.getItem("userId");
     if (userId) {
       config.headers["x-userid"] = userId || 4;
+    } else {
+      config.headers["x-userid"] = 4;
     }
     return config;
   },

@@ -5,7 +5,7 @@ import {
   ClaimConfigConfigDto,
   FieldOptionDto,
 } from "../types";
-import { fetchConfig } from "../services";
+import { fetchConfig, updateConfig } from "../services";
 import { CONFIG_STORAGE_KEY } from "../utils/constant";
 import AttributeConfiguration from "../components/AttributeConfiguration";
 import { sortObjectsByOrderingNumber } from "../utils";
@@ -22,6 +22,7 @@ const Config = () => {
   const [editedTitle, setEditedTitle] = useState("");
   const [editedDescription, setEditedDescription] = useState("");
   const [openConfigs, setOpenConfigs] = useState<Record<string, boolean>>({});
+  const [updated, setUpdated] = useState(false);
 
   useEffect(() => {
     const getConfig = async () => {
@@ -37,12 +38,12 @@ const Config = () => {
         setConfig(response);
         if (response?.data?.length) setSelectedStep(response.data[0]);
         localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(response));
-      } catch (error) {
-        console.error("Error fetching configuration:", error);
+      } catch (error: any) {
+        alert("Error fetching configuration: " + error.message);
       }
     };
     getConfig();
-  }, []);
+  }, [updated]);
 
   useEffect(() => {
     if (selectedStep) {
@@ -156,7 +157,7 @@ const Config = () => {
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!selectedStep || !config) return;
     const updatedSteps = config.data.map((step) =>
       step.title === selectedStep.title
@@ -168,8 +169,17 @@ const Config = () => {
           }
         : step
     );
-    const updatedConfig = { ...config, data: updatedSteps };
-    setConfig(updatedConfig);
+
+    await updateConfig({ request: updatedSteps })
+      .then((response) => {
+        if (response) {
+          localStorage.removeItem(CONFIG_STORAGE_KEY);
+          setUpdated(true);
+        }
+      })
+      .catch((error) => {
+        alert("Error updating configuration:" + error.message);
+      });
   };
 
   const toggleConfig = (key: string) => {
