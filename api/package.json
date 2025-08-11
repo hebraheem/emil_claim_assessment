@@ -22,7 +22,9 @@
     "start:all": "concurrently \"yarn start:dev claims\" \"yarn start:dev api\"",
     "docker:up-no-cache": "docker compose build --no-cache && docker compose up -d",
     "docker:up": "docker compose up -d",
-    "docker:down": "docker compose down"
+    "docker:down": "docker compose down",
+    "docker:db": "docker compose up -d db",
+    "docker:backend": "docker compose up -d api db"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.13.4",

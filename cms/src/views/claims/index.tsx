@@ -99,6 +99,7 @@ const Claims = () => {
           <table className="min-w-full bg-white border rounded shadow">
             <thead>
               <tr className="bg-gray-100 text-gray-700 text-left">
+                <th className="py-2 px-4">S/N</th>
                 <th className="py-2 px-4">Claim ID</th>
                 <th className="py-2 px-4">Related Policy</th>
                 <th className="py-2 px-4">Incident type</th>
@@ -115,8 +116,9 @@ const Claims = () => {
                   </td>
                 </tr>
               ) : (
-                claims.map((claim) => (
+                claims.map((claim, index) => (
                   <tr key={claim.claimId} className="border-t hover:bg-gray-50">
+                    <td className="py-2 px-4">{index + 1}</td>
                     <td className="py-2 px-4">{claim.claimId}</td>
                     <td className="py-2 px-4">{claim.policyId}</td>
                     <td className="py-2 px-4">

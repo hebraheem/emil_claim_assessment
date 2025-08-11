@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { fetchClaim, fetchConfig } from "../../services";
+import {
+  deleteClaim,
+  fetchClaim,
+  fetchConfig,
+  updateClaim,
+} from "../../services";
 import { ClaimDto } from "../../types";
 import { PATHS } from "../../routes/paths";
 import {
@@ -16,6 +21,8 @@ const ClaimDetail = () => {
   const [claim, setClaim] = useState<ClaimDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [configDef, setConfigDef] = useState<Record<string, any> | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [approving, setApproving] = useState(false);
 
   useEffect(() => {
     const getConfig = async () => {
@@ -68,6 +75,51 @@ const ClaimDetail = () => {
     };
     getClaim();
   }, [id]);
+
+  const onApprove = async () => {
+    if (!claim) return;
+    const prevStatus = structuredClone(claim).status;
+    if (claim.status === "CLOSED") {
+      alert("Closed claims cannot  be approved.");
+      return;
+    }
+    try {
+      setApproving(true);
+      claim.status = "CLOSED";
+      await updateClaim(claim.claimId.toString(), claim);
+      alert("Claim approved successfully!");
+      navigate(PATHS.CLAIMS);
+    } catch (error: any) {
+      alert(
+        error.message + " " + JSON.stringify(error.errors || {}, null, 2) ||
+          "Failed to approve claim"
+      );
+      claim.status = prevStatus;
+    } finally {
+      setApproving(false);
+    }
+  };
+
+  const onDelete = async () => {
+    if (!claim) return;
+    if (claim.status !== "OPEN") {
+      alert("Only open claims can be deleted.");
+      return;
+    }
+    try {
+      setDeleting(true);
+      await deleteClaim(claim.claimId.toString());
+      alert("Claim deleted successfully!");
+      navigate(PATHS.CLAIMS);
+    } catch (error: any) {
+      alert(
+        error.message + " " + JSON.stringify(error.errors || {}, null, 2) ||
+          "Failed to delete claim"
+      );
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -185,16 +237,18 @@ const ClaimDetail = () => {
           Edit Claim
         </button>
         <button
-          disabled={claim.status === "CLOSED"}
+          disabled={approving || claim.status === "CLOSED"}
+          onClick={onApprove}
           className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 font-semibold"
         >
-          Approve
+          {approving ? "Approving..." : "Approve"}
         </button>
         <button
-          disabled={claim.status !== "OPEN"}
+          disabled={deleting || claim.status !== "OPEN"}
+          onClick={onDelete}
           className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-semibold"
         >
-          Delete
+          {deleting ? "Deleting..." : "Delete"}
         </button>
       </div>
     </div>
