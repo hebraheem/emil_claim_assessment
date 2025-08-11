@@ -353,7 +353,8 @@ message DeleteClaimResponse {
 
 ## Demo Video
 
-[![Watch the demo](https://cdn.loom.com/sessions/thumbnails/5529f5befa97489684eb2e9b6ec2b58f-with-play.gif)](https://www.loom.com/share/5529f5befa97489684eb2e9b6ec2b58f?sid=16b9463d-1a32-44b2-bc21-3bb4d0dbf8f1)
+[![Watch the demo](https://cdn.loom.com/sessions/thumbnails/5529f5befa97489684eb2e9b6ec2b58f-with-play.gif)]
+https://www.loom.com/share/5529f5befa97489684eb2e9b6ec2b58f?sid=16b9463d-1a32-44b2-bc21-3bb4d0dbf8f1
 
 ```
 
