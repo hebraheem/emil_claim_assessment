@@ -8,7 +8,7 @@ import {
   UpdateClaimRequestDto,
   ClaimDto,
 } from "../../types";
-import { CONFIG_STORAGE_KEY } from "../../utils";
+import { CONFIG_STORAGE_KEY, sortObjectsByOrderingNumber } from "../../utils";
 import {
   createClaim,
   fetchClaim,
@@ -213,7 +213,9 @@ const UpsertClaim = () => {
         <h3 className="text-lg font-semibold mb-2">{currentStep.title}</h3>
         <p className="mb-4 text-gray-500">{currentStep.description}</p>
         {Object.entries(
-          currentStep.configs as Record<string, ClaimConfigConfigDto>
+          sortObjectsByOrderingNumber(
+            currentStep.configs as Record<string, ClaimConfigConfigDto>
+          )
         ).map(([key, field]) => (
           <div key={field.key}>
             <AttributeRendererComponent

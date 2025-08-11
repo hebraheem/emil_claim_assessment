@@ -1,35 +1,36 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { ClaimsConfigService } from './claims-config.service';
-import * as fs from 'fs';
-import path from 'path';
-
-jest.mock('fs');
+import { PrismaService } from './prisma/prisma.service';
 
 describe('ClaimsConfigService', () => {
   let service: ClaimsConfigService;
+  let prismaService: any;
 
   beforeEach(() => {
-    service = new ClaimsConfigService();
+    prismaService = {
+      claimConfig: {
+        upsert: jest.fn(),
+        findUnique: jest.fn(),
+      },
+    };
+    service = new ClaimsConfigService(prismaService as PrismaService);
     jest.clearAllMocks();
   });
 
   describe('updateConfig', () => {
-    it('should write config to file and return success', async () => {
-      (fs.mkdirSync as jest.Mock).mockImplementation(() => {});
-      (fs.writeFileSync as jest.Mock).mockImplementation(() => {});
-
+    it('should upsert config and return success', async () => {
       const dto = { request: [{ id: '1', title: 'Test' }] };
+      const fakeConfig = { id: 'default', request: dto.request };
+      prismaService.claimConfig.upsert.mockResolvedValue(fakeConfig);
+
       const result = await service.updateConfig(dto as any);
 
-      expect(fs.mkdirSync).toHaveBeenCalledWith(
-        path.dirname(service['filePath']),
-        { recursive: true },
-      );
-      expect(fs.writeFileSync).toHaveBeenCalledWith(
-        service['filePath'],
-        JSON.stringify(dto.request, null, 2),
-        'utf-8',
-      );
+      expect(prismaService.claimConfig.upsert).toHaveBeenCalledWith({
+        where: { id: 'default' },
+        update: { request: dto.request },
+        create: { id: 'default', request: dto.request },
+      });
       expect(result).toEqual({
         data: dto.request,
         message: 'Config saved successfully',
@@ -39,30 +40,30 @@ describe('ClaimsConfigService', () => {
     });
 
     it('should handle errors and return error response', async () => {
-      (fs.mkdirSync as jest.Mock).mockImplementation(() => {
-        throw new Error('mkdir error');
-      });
+      prismaService.claimConfig.upsert.mockRejectedValue(new Error('db error'));
 
       const dto = { request: [] };
       const result = await service.updateConfig(dto as any);
 
       expect(result.success).toBe(false);
       expect(result.status).toBe(500);
-      expect(result.message).toContain('mkdir error');
+      expect(result.message).toContain('db error');
     });
   });
 
   describe('getConfig', () => {
-    it('should read config from file and return data', async () => {
+    it('should get config from db and return data', async () => {
       const fakeData = [{ id: '1', title: 'Test' }];
-      (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(fakeData));
+      prismaService.claimConfig.findUnique.mockResolvedValue({
+        id: 'default',
+        request: fakeData,
+      });
 
       const result = await service.getConfig();
 
-      expect(fs.readFileSync).toHaveBeenCalledWith(
-        service['filePath'],
-        'utf-8',
-      );
+      expect(prismaService.claimConfig.findUnique).toHaveBeenCalledWith({
+        where: { id: 'default' },
+      });
       expect(result).toEqual({
         data: fakeData,
         message: 'Configuration updated successfully',
@@ -72,9 +73,9 @@ describe('ClaimsConfigService', () => {
     });
 
     it('should handle errors and return error response', async () => {
-      (fs.readFileSync as jest.Mock).mockImplementation(() => {
-        throw new Error('read error');
-      });
+      prismaService.claimConfig.findUnique.mockRejectedValue(
+        new Error('read error'),
+      );
 
       const result = await service.getConfig();
 

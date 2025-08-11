@@ -10,7 +10,7 @@ generator client {
   binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
 }
 
-datasource db {
+datasource db { 
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
@@ -40,4 +40,12 @@ model ClaimMeta {
 
   @@unique([claimId, key])
   @@index([claimId])
+}
+
+
+
+model claimConfig {
+  id             String   @id 
+  request       Json     // Stores ClaimConfigUpdateRequestDto
+ 
 }

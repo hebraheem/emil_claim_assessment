@@ -1,45 +1,48 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable } from '@nestjs/common';
-import { ClaimConfigResponseDto, ClaimConfigUpdateRequestDto } from 'proto';
+import { ClaimConfigResponseDto } from 'proto';
 
-import path from 'path';
-import * as fs from 'fs';
 import { PrismaService } from './prisma/prisma.service';
+import { InputJsonValue } from 'generated/prisma/runtime/library';
 
 @Injectable()
 export class ClaimsConfigService {
-  private filePath = path.join(
-    process.cwd(), // root where you run "yarn start" or "npm run start:dev"
-    'apps',
-    'configData',
-    'claim-config.json',
-  );
-
   constructor(private prismaService: PrismaService) {}
 
   /**
    * Retrieves the claim configuration.
    * @returns {Promise<ClaimConfigResponseDto>} A promise that resolves to ClaimConfigResponseDto containing the configuration data.
    */
-  async updateConfig(
-    body: ClaimConfigUpdateRequestDto,
-  ): Promise<ClaimConfigResponseDto> {
+  async updateConfig(body: unknown): Promise<ClaimConfigResponseDto> {
     try {
-      // Ensure directory exists
-      fs.mkdirSync(path.dirname(this.filePath), { recursive: true });
+      const configs = JSON.parse(
+        JSON.stringify((body as { id: string; request: object }).request),
+      ) as InputJsonValue;
 
-      // Write JSON to file
-      fs.writeFileSync(
-        this.filePath,
-        JSON.stringify(body.request, null, 2),
-        'utf-8',
-      );
+      const createData = {
+        id: 'default',
+        request: configs,
+      } as any;
 
-      return Promise.resolve({
-        data: body.request,
+      // Upsert config in the database
+      // eslint-disable-next-line
+      const config = (await this.prismaService.claimConfig.upsert({
+        where: { id: 'default' },
+        update: {
+          request: configs,
+        },
+        create: createData,
+      })) as { id: string; request: object };
+
+      return {
+        data:
+          config && 'request' in config
+            ? (config.request as unknown as ClaimConfigResponseDto['data'])
+            : [],
         message: `Config saved successfully`,
         success: true,
         status: 200,
-      });
+      };
     } catch (error) {
       return this.handleError(error, 'Error updating configuration');
     }
@@ -51,9 +54,13 @@ export class ClaimsConfigService {
    */
   async getConfig(): Promise<ClaimConfigResponseDto> {
     try {
-      const config = fs.readFileSync(this.filePath, 'utf-8');
+      // eslint-disable-next-line
+      const fetchedConfig = (await this.prismaService.claimConfig.findUnique({
+        where: { id: 'default' },
+      })) as { id: string; request: object };
+
       return Promise.resolve({
-        data: JSON.parse(config) as ClaimConfigResponseDto['data'],
+        data: fetchedConfig?.request as ClaimConfigResponseDto['data'],
         message: 'Configuration updated successfully',
         success: true,
         status: 200,
