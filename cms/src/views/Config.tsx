@@ -176,7 +176,7 @@ const Config = () => {
         defaultValue: "",
         placeholder: "",
         required: false,
-        dependsOn: { key: "", value: "" },
+        dependsOn: {} as ClaimConfigConfigDto["dependsOn"],
         orderingNumber: Object.keys(prev).length + 1,
       },
     }));
@@ -297,19 +297,20 @@ const Config = () => {
   // Add a new step
   const handleAddStep = () => {
     if (!config) return;
+    const generatedId = generateConfigId();
     const newStep: StepsDto = {
       title: "New Step " + (config.data.length + 1),
       description: "",
       orderingNumber: config.data.length + 1,
       configs: {
-        [generateConfigId()]: {
-          id: generateConfigId(),
-          key: generateConfigId(),
+        [generatedId]: {
+          id: generatedId,
+          key: generatedId,
           label: "New Config",
           type: "text",
           options: [],
           orderingNumber: 1,
-          dependsOn: { key: "", value: "" },
+          dependsOn: {} as ClaimConfigConfigDto["dependsOn"],
         },
       },
     };

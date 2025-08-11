@@ -3,6 +3,7 @@ import { ClaimConfigResponseDto, ClaimConfigUpdateRequestDto } from 'proto';
 
 import path from 'path';
 import * as fs from 'fs';
+import { PrismaService } from './prisma/prisma.service';
 
 @Injectable()
 export class ClaimsConfigService {
@@ -12,6 +13,8 @@ export class ClaimsConfigService {
     'configData',
     'claim-config.json',
   );
+
+  constructor(private prismaService: PrismaService) {}
 
   /**
    * Retrieves the claim configuration.

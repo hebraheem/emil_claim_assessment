@@ -110,6 +110,7 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
                 className="w-full border rounded px-2 py-1"
                 value={field.label}
                 required
+                data-testid="label"
                 readOnly={readOnly}
                 onChange={(e) =>
                   handleFieldChange(configKey, "label", e.target.value)
@@ -130,6 +131,7 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
                 className="w-full border rounded px-2 py-1"
                 value={field.key}
                 required
+                data-testid="key"
                 pattern="^[A-Za-z0-9_]+$"
                 readOnly={readOnly}
                 onChange={(e) =>
@@ -144,6 +146,7 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
                 className="w-full border rounded px-2 py-1"
                 value={field.placeholder || ""}
                 readOnly={readOnly}
+                data-testid="placeholder"
                 onChange={(e) =>
                   handleFieldChange(configKey, "placeholder", e.target.value)
                 }
@@ -155,6 +158,7 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
                 className="w-full border rounded px-2 py-1"
                 value={field.defaultValue || ""}
                 readOnly={readOnly}
+                data-testid="defaultValue"
                 onChange={(e) =>
                   handleFieldChange(configKey, "defaultValue", e.target.value)
                 }
@@ -167,6 +171,7 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
               <input
                 type="text"
                 disabled={readOnly}
+                data-testid="validation"
                 className="w-full border rounded px-2 py-1"
                 value={field.validation}
                 onChange={() =>
@@ -188,6 +193,7 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
                 type="checkbox"
                 disabled={readOnly}
                 checked={hasDependency}
+                data-testid="hasDependency"
                 onChange={() => setHasDependency((prev) => !prev)}
               />
             </div>
@@ -207,6 +213,9 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
                 disabled={readOnly}
                 className="w-full border rounded px-2 py-1"
                 value={field.dependsOn?.key || ""}
+                pattern="^[A-Za-z0-9_]+$"
+                required={hasDependency}
+                data-testid="dependsOnKey"
                 onChange={(e) =>
                   handleFieldChange(
                     configKey,
@@ -231,6 +240,8 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
               <input
                 type="text"
                 disabled={readOnly}
+                data-testid="dependsOnValue"
+                required={hasDependency}
                 className="w-full border rounded px-2 py-1"
                 value={field.dependsOn?.value || ""}
                 onChange={(e) => {
@@ -251,6 +262,7 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
                     type="radio"
                     disabled={readOnly}
                     className="form-radio"
+                    data-testid="requiredYes"
                     checked={field.required === true}
                     onChange={() =>
                       handleFieldChange(configKey, "required", true)
@@ -262,6 +274,7 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
                   <input
                     type="radio"
                     disabled={readOnly}
+                    data-testid="requiredNo"
                     className="form-radio"
                     checked={field.required === false}
                     onChange={() =>
@@ -279,6 +292,7 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
                 className="w-full border rounded px-2 py-1"
                 value={field.type}
                 required
+                data-testid="type"
                 disabled={readOnly}
                 onChange={(e) =>
                   handleFieldChange(configKey, "type", e.target.value)
@@ -313,6 +327,7 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
                     value={option.value}
                     pattern="^[A-Za-z0-9_]+$"
                     required
+                    data-testid="optionValue"
                     onChange={(e) =>
                       handleOptionChange(
                         configKey,
@@ -328,6 +343,7 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
                     value={option.label}
                     readOnly={readOnly}
                     required
+                    data-testid="optionLabel"
                     onChange={(e) =>
                       handleOptionChange(
                         configKey,

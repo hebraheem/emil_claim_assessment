@@ -1,18 +1,49 @@
-### Resources
+````markdown
+# 📚 Claims gRPC - REST API
 
-- https://www.youtube.com/watch?v=-pVHnB5n_Xs - short video to understand gRPC
-
-- https://www.youtube.com/watch?v=GHTA143_b-s&t=16s - crash course on nest.js
-
-- https://docs.nestjs.com/microservices/grpc official documentation for gRPC
-
-- https://docs.nestjs.com official documentation for nest.js
-
-- Github Copilot - to generate UI design
+A monorepo project providing a gRPC-based backend (NestJS) and a React frontend for managing insurance claims.
 
 ---
 
-# 📚 Claims gRPC - REST API
+## Table of Contents
+
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Authentication](#authentication)
+- [Services](#services)
+- [Protobuf Messages](#protobuf-messages)
+- [Usage](#usage)
+- [Scripts](#scripts)
+- [Trade Offs](#trade-offs)
+- [Assumptions](#assumptions)
+- [Test Coverage](#test-coverage)
+- [Resources](#resources)
+- [Issues Faced](#issues-faced)
+- [Steps Cut](#steps-cut)
+- [Demo video](#demo-video)
+
+---
+
+## Overview
+
+This project implements a claims management system using gRPC for backend communication and a React-based frontend. It supports claim configuration, creation, retrieval, updating, and deletion, with a focus on modularity and type safety.
+
+---
+
+## Architecture
+
+- **Backend:** NestJS microservices using gRPC and Protobuf for contract-first API development.
+- **Frontend:** React (with TypeScript) for the CMS, using Axios for API calls.
+- **Database:** Prisma ORM (PostgreSQL or other supported DBs).
+- **DevOps:** Docker for local development, GitHub Actions for CI.
+
+---
+
+## Authentication
+
+- It's is assumed that user(s) are already verified therefore no authentication module or library was build/used. However the frontend must send a userId in the header as x-userid, this is currently hardcoded on the frontend and backend verifies that the x-userId is in the header otherwise it throws `non-authorize` error.
+
+---
 
 ## Services
 
@@ -22,8 +53,6 @@
 | ----------------- | ----------------------------- | ------------------------ | ---------------------------- |
 | GetClaimConfig    | `Empty`                       | `ClaimConfigResponseDto` | Get the current claim config |
 | UpdateClaimConfig | `ClaimConfigUpdateRequestDto` | `ClaimConfigResponseDto` | Update the claim config      |
-
----
 
 ### ClaimService
 
@@ -37,9 +66,12 @@
 
 ---
 
-## Messages
+## Protobuf Messages
 
 ### ClaimConfig
+
+<details>
+<summary>Show ClaimConfig Protobuf</summary>
 
 ```proto
 message Empty {}
@@ -88,8 +120,14 @@ message DependsOn {
   string value = 2; // Values that this field depends on
 }
 ```
+````
+
+</details>
 
 ### Claim
+
+<details>
+<summary>Show Claim Protobuf</summary>
 
 ```proto
 message Claim {
@@ -108,7 +146,12 @@ message Claim {
 }
 ```
 
+</details>
+
 ### Claim Service Messages
+
+<details>
+<summary>Show Claim Service Protobuf</summary>
 
 ```proto
 message GetClaimsRequest {
@@ -180,6 +223,10 @@ message DeleteClaimResponse {
 }
 ```
 
+</details>
+
+---
+
 ## Usage
 
 - Use a gRPC client (e.g., [grpcurl](https://github.com/fullstorydev/grpcurl), [BloomRPC](https://github.com/bloomrpc/bloomrpc)) or generated client code to call these endpoints.
@@ -187,21 +234,40 @@ message DeleteClaimResponse {
 
 ---
 
-## Issue Faced
+## Scripts
 
-- Problem with ts-proto:
-  - `.ts` files not generated (issue was with `protoc`). Solution: referenced `ts_proto` in the `node_modules`.
-  - Copying proto file over to the dist folder (issue: folder setup was incorrect, therefore referenced wrong root path).
+> **Note:** All scripts must be run in the `api` folder except the FE script.
+
+- `yarn docker:up` - Start all services (BE and FE) in Docker
+- `yarn docker:down` - Stop all Docker services
+- `yarn docker:db` - Run only the database in Docker (BE can run locally)
+- `yarn docker:backend` - Run both the database and BE in Docker (FE can run locally)
+- `yarn docker:up-no-cache` - Start all services in Docker and clear cache
+- `yarn start:all` - Start all BE modules on your machine
+- `yarn test` - Run tests (can `cd` to individual project)
+- `yarn start` - Start the FE module, `cd` to `cms` before running
 
 ---
 
 ## Trade Offs
 
-- Do not use any methods from the underlying library/framework (e.g., Express).
-- Try as much as possible to use DTOs, especially for validation.
-- Use Normal axios for data fetching (alternative would be ReactQuery - for performance optimization. However for the current implementation axios is sufficient)
-- I have not used any UI Library becuase of the app size (However for a larger app i could consider MUi, Chakra or Shadcn UI)
-- No form library has been used (Available option Formik or React-hooks-form with yup validator )
+- **No direct use of underlying framework methods:**  
+  Avoided using methods from the underlying library/framework (e.g., Express) to keep the codebase portable and decoupled.
+
+- **DTOs for validation:**  
+  Used Data Transfer Objects (DTOs) for validation and structure, improving maintainability and type safety at the cost of some boilerplate.
+
+- **Axios for data fetching:**  
+  Used plain Axios for frontend data fetching. React Query could offer better caching and performance, but Axios is simpler for current needs.
+
+- **No UI library:**  
+  Did not use a UI component library (like MUI, Chakra, or Shadcn UI) to keep the app lightweight, but this means more manual UI work.
+
+- **No form library:**  
+  Did not use a form library (like Formik or React Hook Form with Yup), reducing dependencies but making complex form handling more manual.
+
+- **Minimal test**
+  Test was only written for important sections of the app.
 
 ---
 
@@ -210,4 +276,79 @@ message DeleteClaimResponse {
 - All currency is in Euro.
 - Users are already verified.
 - Policy is opened.
-- Step one is always fixed.
+- Claim information is always fixed.
+
+---
+
+## Test Coverage
+
+> **Test Coverage Report (important functionalities):**
+
+| File                           | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                                                                                                                   |
+| ------------------------------ | ------- | -------- | ------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **All files**                  | 19.25   | 8.4      | 9.5     | 24.75   |                                                                                                                                     |
+| apps/api/src                   | 52.63   | 66.21    | 44.44   | 54.54   |                                                                                                                                     |
+| ├─ app.controller.ts           | 89.47   | 70       | 100     | 100     | 38-141                                                                                                                              |
+| ├─ app.module.ts               | 0       | 100      | 100     | 0       | 1-25                                                                                                                                |
+| ├─ app.service.ts              | 37.5    | 100      | 0       | 28.57   | 33-104                                                                                                                              |
+| ├─ main.ts                     | 0       | 0        | 0       | 0       | 1-23                                                                                                                                |
+| apps/api/src/dtos              | 93      | 50       | 0       | 93      |                                                                                                                                     |
+| ├─ claim-config.dto.ts         | 86.66   | 100      | 0       | 86.66   | 38,60,86,102                                                                                                                        |
+| ├─ claim.dto.ts                | 95.58   | 50       | 0       | 95.58   | 112,148,185                                                                                                                         |
+| ├─ index.ts                    | 100     | 100      | 100     | 100     |                                                                                                                                     |
+| apps/api/src/exceptions        | 0       | 0        | 0       | 0       |                                                                                                                                     |
+| ├─ http-filter.exception.ts    | 0       | 0        | 0       | 0       | 1-67                                                                                                                                |
+| apps/api/src/interceptors      | 0       | 0        | 0       | 0       |                                                                                                                                     |
+| ├─ user-id.interceptor.ts      | 0       | 0        | 0       | 0       | 1-24                                                                                                                                |
+| apps/api/src/pipes             | 33.33   | 0        | 20      | 27.27   |                                                                                                                                     |
+| ├─ grpc-validation.pipe.ts     | 23.52   | 0        | 25      | 18.75   | 21-103                                                                                                                              |
+| ├─ index.ts                    | 100     | 100      | 100     | 100     |                                                                                                                                     |
+| ├─ user-auth.pipe.ts           | 50      | 0        | 0       | 40      | 15-25                                                                                                                               |
+| apps/claims/src                | 59      | 50.9     | 70      | 58.78   |                                                                                                                                     |
+| ├─ claims-config.controller.ts | 100     | 75       | 100     | 100     | 16-36                                                                                                                               |
+| ├─ claims-config.service.ts    | 100     | 83.33    | 100     | 100     | 67                                                                                                                                  |
+| ├─ claims.controller.ts        | 100     | 75       | 100     | 100     | 23-46                                                                                                                               |
+| ├─ claims.module.ts            | 0       | 100      | 100     | 0       | 1-20                                                                                                                                |
+| ├─ claims.service.ts           | 51.06   | 34.34    | 52.94   | 51.68   | 96,171,262-272,278-279,284-331,339-396                                                                                              |
+| ├─ main.ts                     | 0       | 100      | 0       | 0       | 1-26                                                                                                                                |
+| apps/claims/src/prisma         | 46.15   | 75       | 0       | 44.44   |                                                                                                                                     |
+| ├─ prisma.module.ts            | 0       | 100      | 100     | 0       | 1-14                                                                                                                                |
+| ├─ prisma.service.ts           | 75      | 75       | 0       | 66.66   | 40-52                                                                                                                               |
+| generated/prisma               | 91.22   | 50       | 0       | 91.22   | 208-218                                                                                                                             |
+| generated/prisma/runtime       | 17.68   | 6.83     | 8.02    | 54      | 14,18-22,25-27,38-60,68,72-104,115-116,126-129                                                                                      |
+| proto/types/proto              | 4.87    | 0        | 5.12    | 4.87    | ...162-1205,1210-1275,1280-1323,1328-1393,1409-1554,1559-1602,1616-1750,1755-1798,1803-1846,1851-1916,1921-1970,1999-2000,2046-2047 |
+
+---
+
+## Resources
+
+- [gRPC short video](https://www.youtube.com/watch?v=-pVHnB5n_Xs)
+- [NestJS crash course](https://www.youtube.com/watch?v=GHTA143_b-s&t=16s)
+- [NestJS gRPC docs](https://docs.nestjs.com/microservices/grpc)
+- [NestJS docs](https://docs.nestjs.com)
+- [grpcurl](https://github.com/fullstorydev/grpcurl) - CLI for gRPC
+- [BloomRPC](https://github.com/bloomrpc/bloomrpc) - GUI for gRPC
+- GitHub Copilot - for UI design, test/mocks generation, and code auto completion
+
+---
+
+## Issues Faced
+
+- **Problem with ts-proto:**
+  - `.ts` files not generated (issue was with `protoc`). Solution: referenced `ts_proto` in the `node_modules`.
+  - Copying proto file over to the dist folder (issue: folder setup was incorrect, therefore referenced wrong root path).
+
+---
+
+## Step Cut
+
+- **EMBEDDING** : Deliver as a single JS bundle (Not completely sure how this is done)
+- **TESTING** : Minimal test coverage
+
+---
+
+## Demo Video
+
+```
+
+```

@@ -74,7 +74,7 @@ const AttributeRendererComponent = ({
           <input
             className={valueClass}
             value={value}
-            id={key}
+            data-testid={key}
             type={type}
             required={configDef.required}
             placeholder={configDef.placeholder || ""}
@@ -107,7 +107,7 @@ const AttributeRendererComponent = ({
         return (
           <input
             className={valueClass}
-            id={key}
+            data-testid={key}
             type="checkbox"
             required={configDef.required}
             checked={value}
@@ -143,7 +143,7 @@ const AttributeRendererComponent = ({
           <textarea
             className={valueClass}
             value={value}
-            id={key}
+            data-testid={key}
             required={configDef.required}
             placeholder={configDef.placeholder || ""}
             onChange={(e) => {
@@ -157,7 +157,7 @@ const AttributeRendererComponent = ({
           <input
             className={valueClass}
             value={value}
-            id={key}
+            data-testid={key}
             required={configDef.required}
             type="date"
             onChange={(e) => {
@@ -171,7 +171,7 @@ const AttributeRendererComponent = ({
           <input
             className={valueClass}
             value={value}
-            id={key}
+            data-testid={key}
             required={configDef.required}
             type="datetime-local"
             onChange={(e) => {
@@ -185,7 +185,7 @@ const AttributeRendererComponent = ({
           <input
             className={valueClass}
             value={value}
-            id={key}
+            data-testid={key}
             type="time"
             required={configDef.required}
             onChange={(e) => {
@@ -199,7 +199,7 @@ const AttributeRendererComponent = ({
           <input
             className={valueClass}
             value={value}
-            id={key}
+            data-testid={key}
             type="text"
             required={configDef.required}
             placeholder={configDef.placeholder || ""}

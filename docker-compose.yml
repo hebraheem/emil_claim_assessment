@@ -24,24 +24,24 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "51213:5432"
+      - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
     networks:
       - app_network
 
-  # cms:
-  #   build:
-  #     context: ./cms
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "5173:5173"
-  #   depends_on:
-  #     - api
-  #   volumes:
-  #     - ./cms:/app
-  #   networks:
-  #     - app_network
+  cms:
+    build:
+      context: ./cms
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+    volumes:
+      - ./cms:/app
+    networks:
+      - app_network
 
 volumes:
   db_data:

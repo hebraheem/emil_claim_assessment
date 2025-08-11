@@ -253,6 +253,7 @@ export class ClaimsService {
       string,
       any
     >[];
+
     const attributesConfigs: Record<string, any> = {};
     const attributes = request.attributes as Record<string, any>;
     const errors: string[] = [];

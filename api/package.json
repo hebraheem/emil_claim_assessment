@@ -85,11 +85,12 @@
     "coverageDirectory": "./coverage",
     "testEnvironment": "node",
     "roots": [
-      "<rootDir>/apps/",
-      "<rootDir>/libs/"
+      "<rootDir>/apps/"
     ],
     "moduleNameMapper": {
-      "^@app/common(|/.*)$": "<rootDir>/libs/common/src/$1"
+      "^@app/common(|/.*)$": "<rootDir>/libs/common/src/$1",
+      "^proto(.*)$": "<rootDir>/proto/types/proto/claim.ts$1",
+      "^generated/prisma(.*)$": "<rootDir>/generated/prisma$1"
     }
   }
 }

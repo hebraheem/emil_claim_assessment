@@ -142,8 +142,4 @@ export class AppController {
     request.claimId = claimId;
     return this.appService.deleteClaim(request);
   }
-
-  getHello(): string {
-    return 'Hello World!';
-  }
 }
