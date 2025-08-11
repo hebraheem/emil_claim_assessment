@@ -115,11 +115,20 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium">Key *</label>
+              <label
+                title="Input key must be alphanumeric and can include underscores only."
+                className="block text-sm font-medium"
+              >
+                <span className="text-white bg-blue-500 rounded-full mr-2 w-4 h-4 cursor-pointer">
+                  &#x2139;
+                </span>{" "}
+                Key *
+              </label>
               <input
                 className="w-full border rounded px-2 py-1"
                 value={field.key}
                 required
+                pattern="^[A-Za-z0-9_]+$"
                 readOnly={readOnly}
                 onChange={(e) =>
                   handleFieldChange(configKey, "key", e.target.value)
@@ -282,62 +291,70 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
             </div>
           </div>
           {/* Editable options for specific type */}
-          {field.type === "select" ||
-            (field.type === "radio" && (
-              <div className="mt-4">
-                <label className="block text-sm font-medium mb-2">
-                  Options
-                </label>
-                {field.options?.map((option, idx) => (
-                  <div key={idx} className="flex gap-2 mb-2">
-                    <input
-                      className="border rounded px-2 py-1 flex-1"
-                      placeholder="Value"
-                      readOnly={readOnly}
-                      value={option.value}
-                      onChange={(e) =>
-                        handleOptionChange(
-                          configKey,
-                          idx,
-                          "value",
-                          e.target.value
-                        )
-                      }
-                    />
-                    <input
-                      className="border rounded px-2 py-1 flex-1"
-                      placeholder="Label"
-                      value={option.label}
-                      readOnly={readOnly}
-                      onChange={(e) =>
-                        handleOptionChange(
-                          configKey,
-                          idx,
-                          "label",
-                          e.target.value
-                        )
-                      }
-                    />
-                    <button
-                      type="button"
-                      disabled={readOnly}
-                      className="text-red-500 font-bold px-2"
-                      onClick={() => handleRemoveOption(configKey, idx)}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  disabled={readOnly}
-                  className="bg-green-500 text-white px-3 py-1 rounded"
-                  onClick={() => handleAddOption(configKey)}
+          {(field.type === "select" || field.type === "radio") && (
+            <div className="mt-4">
+              <label className="block text-sm font-medium mb-2">
+                <span
+                  title="Input key must be alphanumeric and can include underscores only."
+                  className="text-white bg-blue-500 rounded-full mr-2 w-4 h-4 cursor-pointer"
                 >
-                  + Add Option
-                </button>
-              </div>
-            ))}
+                  &#x2139;
+                </span>
+                Options
+              </label>
+              {field.options?.map((option, idx) => (
+                <div key={idx} className="flex gap-2 mb-2">
+                  <input
+                    className="border rounded px-2 py-1 flex-1"
+                    placeholder="Value"
+                    readOnly={readOnly}
+                    value={option.value}
+                    pattern="^[A-Za-z0-9_]+$"
+                    required
+                    onChange={(e) =>
+                      handleOptionChange(
+                        configKey,
+                        idx,
+                        "value",
+                        e.target.value
+                      )
+                    }
+                  />
+                  <input
+                    className="border rounded px-2 py-1 flex-1"
+                    placeholder="Label"
+                    value={option.label}
+                    readOnly={readOnly}
+                    required
+                    onChange={(e) =>
+                      handleOptionChange(
+                        configKey,
+                        idx,
+                        "label",
+                        e.target.value
+                      )
+                    }
+                  />
+                  <button
+                    type="button"
+                    disabled={readOnly}
+                    className="text-red-500 font-bold px-2"
+                    onClick={() => handleRemoveOption(configKey, idx)}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                disabled={readOnly}
+                className="bg-green-500 text-white px-3 py-1 rounded"
+                onClick={() => handleAddOption(configKey)}
+              >
+                + Add Option
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

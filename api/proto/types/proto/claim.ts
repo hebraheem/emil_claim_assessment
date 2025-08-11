@@ -95,6 +95,8 @@ export interface GetClaimsRequest {
   status: string;
   /** ID of the user to filter claims */
   userId: string;
+  /** Search term to filter claims by incident type, claim ID, or policy ID */
+  search: string;
 }
 
 export interface Claim {
@@ -766,7 +768,7 @@ export const DependsOn: MessageFns<DependsOn> = {
 };
 
 function createBaseGetClaimsRequest(): GetClaimsRequest {
-  return { status: "", userId: "" };
+  return { status: "", userId: "", search: "" };
 }
 
 export const GetClaimsRequest: MessageFns<GetClaimsRequest> = {
@@ -782,6 +784,9 @@ export const GetClaimsRequest: MessageFns<GetClaimsRequest> = {
     }
     if (message.userId !== "") {
       writer.uint32(34).string(message.userId);
+    }
+    if (message.search !== "") {
+      writer.uint32(42).string(message.search);
     }
     return writer;
   },
@@ -823,6 +828,14 @@ export const GetClaimsRequest: MessageFns<GetClaimsRequest> = {
           }
 
           message.userId = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.search = reader.string();
           continue;
         }
       }

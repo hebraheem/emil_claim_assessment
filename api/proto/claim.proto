@@ -70,6 +70,7 @@ message GetClaimsRequest {
   optional int32 pageSize = 2;
   string status = 3; // Status of the claims to filter
   string userId = 4; // ID of the user to filter claims
+  string search = 5; // Search term to filter claims by incident type, claim ID, or policy ID
 }
 
 message Claim {

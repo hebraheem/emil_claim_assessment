@@ -162,12 +162,17 @@ export class ClaimsService {
    * @returns {Promise<GetClaimsResponse>} A promise that resolves to GetClaimsResponseDto containing the list of claims and pagination metadata.
    */
   async getClaims(request: GetClaimsRequest): Promise<GetClaimsResponse> {
-    const { page = 1, pageSize = 10, userId } = request;
+    const { page = 1, pageSize = 10, userId, search } = request;
 
     const where: Record<string, any> = {};
     if (userId) where.userId = userId;
     if (request.status) where.status = request.status;
-
+    if (typeof search === 'string' && search.trim() !== '') {
+      where.OR = [
+        { incidentType: { contains: search, mode: 'insensitive' } },
+        { policyId: { contains: search, mode: 'insensitive' } },
+      ];
+    }
     const [claims, total] = await Promise.all([
       this.prismaService.claim.findMany({
         where,

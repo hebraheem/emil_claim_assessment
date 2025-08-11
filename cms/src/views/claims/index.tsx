@@ -53,7 +53,7 @@ const Claims = () => {
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center mb-4 gap-3 sm:gap-0 justify-between">
         <div className="flex gap-2 flex-1">
           <input
-            placeholder="Search claims"
+            placeholder="Search by incident type or policy ID"
             type="search"
             value={query.search}
             onChange={(e) =>

@@ -101,11 +101,13 @@ export class AppController {
     @Query('page') page: string,
     @Query('pageSize') pageSize: string,
     @Query('status') status: string,
+    @Query('search') search: string,
   ): Promise<GetClaimsResponse> {
     if (!request) request = {} as GetClaimsRequest;
     request.page = page ? parseInt(page, 10) : undefined;
     request.pageSize = pageSize ? parseInt(pageSize, 10) : undefined;
     request.status = status;
+    request.search = search || '';
     return this.appService.getClaims(request);
   }
 

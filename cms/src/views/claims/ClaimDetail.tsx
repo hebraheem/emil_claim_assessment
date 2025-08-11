@@ -33,7 +33,6 @@ const ClaimDetail = () => {
         } else {
           configObj = JSON.parse(configStr) as Record<string, any>;
         }
-        // setConfigDef(response);
         const attributesConfigs: Record<string, any> = {};
         configObj?.data.forEach(
           (item: { configs: Record<string, unknown>; fixed: boolean }) => {

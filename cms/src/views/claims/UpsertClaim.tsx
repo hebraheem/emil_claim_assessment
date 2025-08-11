@@ -56,24 +56,46 @@ const UpsertClaim = () => {
   }, [isUpdate, id]);
 
   useEffect(() => {
-    const getConfig = async () => {
-      const localConfig = localStorage.getItem(CONFIG_STORAGE_KEY);
-      if (localConfig) {
-        setConfig(JSON.parse(localConfig));
-        return;
+    const sanitizeConfig = (config: ClaimConfigResponseDto) => {
+      if (!isUpdate) {
+        config.data.forEach((step) => {
+          Object.keys(step.configs).forEach((key) => {
+            //!Note: Not recommended in real world apps, but for demo purposes and because this has been assumed to be fixed
+            //! we could add hideIf formula to the config for better and reliable control
+            if (step.configs[key]?.key === "status") {
+              delete step.configs[key];
+            }
+          });
+        });
       }
+      return config;
+    };
+
+    const getConfig = async () => {
       try {
+        const configAttr = localStorage.getItem(CONFIG_STORAGE_KEY);
+        let parsedConfig: ClaimConfigResponseDto | null = null;
+
+        if (configAttr) {
+          parsedConfig = sanitizeConfig(JSON.parse(configAttr));
+          setConfig(parsedConfig);
+          return;
+        }
         setLoading(true);
-        const response = await fetchConfig();
-        setConfig(response);
+        const res = await fetchConfig();
+        localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(res));
+        parsedConfig = sanitizeConfig(res);
+        setConfig(parsedConfig);
       } catch (error: any) {
-        alert("Error fetching configuration: " + error.message);
+        console.error("Error fetching configuration:", error);
+        alert(`Error fetching configuration: ${error.message}`);
       } finally {
         setLoading(false);
       }
     };
+
     getConfig();
-  }, []);
+  }, [isUpdate, setConfig, setLoading]);
 
   if (!config) return <div>Loading...</div>;
   if (!config.data?.length) return <div>No steps configured.</div>;

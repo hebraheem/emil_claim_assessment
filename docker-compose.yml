@@ -43,19 +43,6 @@ services:
   #   networks:
   #     - app_network
 
-  # widget:
-  #   build:
-  #     context: ./widget
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "5174:5174"
-  #   depends_on:
-  #     - api
-  #   volumes:
-  #     - ./widget:/app
-  #   networks:
-  #     - app_network
-
 volumes:
   db_data:
     driver: local
