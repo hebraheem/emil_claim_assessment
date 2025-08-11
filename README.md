@@ -232,6 +232,9 @@ message DeleteClaimResponse {
 - Use a gRPC client (e.g., [grpcurl](https://github.com/fullstorydev/grpcurl), [BloomRPC](https://github.com/bloomrpc/bloomrpc)) or generated client code to call these endpoints.
 - All requests and responses are in Protobuf format.
 
+- There is currently a database issue when running all application in the container (because i have to user different DATABASE_URL for local testing and in docker container for posgres)- i have provided one script that start the application as follows, run db in docker and FE and BE on physical machine.
+  run `cd ../api && yarn start:app` from the root folder.
+
 ---
 
 ## Scripts
@@ -246,6 +249,7 @@ message DeleteClaimResponse {
 - `yarn start:all` - Start all BE modules on your machine
 - `yarn test` - Run tests (can `cd` to individual project)
 - `yarn start` - Start the FE module, `cd` to `cms` before running
+- `yarn start:app` - Starts all app BE and FE on local machine and db in docker
 
 ---
 
@@ -348,6 +352,8 @@ message DeleteClaimResponse {
 ---
 
 ## Demo Video
+
+[![Watch the demo](https://cdn.loom.com/sessions/thumbnails/5529f5befa97489684eb2e9b6ec2b58f-with-play.gif)](https://www.loom.com/share/5529f5befa97489684eb2e9b6ec2b58f?sid=16b9463d-1a32-44b2-bc21-3bb4d0dbf8f1)
 
 ```
 

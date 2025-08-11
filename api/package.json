@@ -24,7 +24,8 @@
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "docker:db": "docker compose up -d db",
-    "docker:backend": "docker compose up -d api db"
+    "docker:backend": "docker compose up -d api db",
+    "start:app": "concurrently \"yarn docker:db\" \"yarn start:all\" \"cd ../cms && yarn start\""
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.13.4",
