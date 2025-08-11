@@ -51,7 +51,9 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
     handleRemoveOption,
     readOnly,
   } = props;
-  const [hasDependency, setHasDependency] = useState(false);
+  const [hasDependency, setHasDependency] = useState(
+    !!field.dependsOn?.key && !!field.dependsOn?.value
+  );
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: configKey });
 
@@ -59,7 +61,7 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
     transform: CSS.Transform.toString(transform),
     transition,
   };
-  console.log("field :>> ", field);
+
   return (
     <div
       key={configKey}
@@ -205,12 +207,12 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
                 disabled={readOnly}
                 className="w-full border rounded px-2 py-1"
                 value={field.dependsOn?.key || ""}
-                onChange={() =>
+                onChange={(e) =>
                   handleFieldChange(
                     configKey,
-                    "key" as keyof ClaimConfigConfigDto,
-                    false,
-                    "dependsOn"
+                    "dependsOn" as keyof ClaimConfigConfigDto,
+                    e.target.value,
+                    "key"
                   )
                 }
               />
@@ -231,12 +233,12 @@ const AttributeConfiguration = (props: IAttributeConfigurationProps) => {
                 disabled={readOnly}
                 className="w-full border rounded px-2 py-1"
                 value={field.dependsOn?.value || ""}
-                onChange={() => {
+                onChange={(e) => {
                   handleFieldChange(
                     configKey,
-                    "value" as keyof ClaimConfigConfigDto,
-                    false,
-                    "dependsOn"
+                    "dependsOn" as keyof ClaimConfigConfigDto,
+                    e.target.value,
+                    "value"
                   );
                 }}
               />

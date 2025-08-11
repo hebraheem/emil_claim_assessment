@@ -89,30 +89,31 @@ const Config = () => {
     value: any,
     nestedKey?: string
   ) => {
-    if (nestedKey) {
-      // return {
-      //   ...prev,
-      //   attributes: {
-      //     ...prev.attributes,
-      //     [fieldKey]: value,
-      //   },
-      // };
-      // Handle nested field change
-      setEditedConfig((prev) => ({
-        ...prev,
-        [key]: {
-          ...prev[key],
+    setEditedConfig((prev) => {
+      const prevConfig = prev[key] || {};
+      // If nestedKey is provided, update the nested field immutably
+      if (nestedKey) {
+        const nestedObj = {
+          ...((prevConfig[field] as Record<string, any>) || {}),
           [nestedKey]: value,
-        },
-      }));
-    } else
-      setEditedConfig((prev) => ({
+        };
+        return {
+          ...prev,
+          [key]: {
+            ...prevConfig,
+            [field]: nestedObj,
+          },
+        };
+      }
+      // Otherwise, update the top-level field
+      return {
         ...prev,
         [key]: {
-          ...prev[key],
+          ...prevConfig,
           [field]: value,
         },
-      }));
+      };
+    });
   };
 
   const handleOptionChange = (
@@ -308,6 +309,7 @@ const Config = () => {
           type: "text",
           options: [],
           orderingNumber: 1,
+          dependsOn: { key: "", value: "" },
         },
       },
     };
