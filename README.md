@@ -301,6 +301,9 @@ message DeleteClaimResponse {
 - **Minimal test**
   Test was only written for important sections of the app.
 
+- **One Repo**
+  A single repository is currently used for both the CMS and the widget. However, separating them would improve maintainability and scalability.
+
 ---
 
 ## Assumptions
@@ -376,7 +379,7 @@ message DeleteClaimResponse {
 
 - **EMBEDDING** : Deliver as a single JS bundle (Not completely sure how this is done)
 - **TESTING** : Minimal test coverage
-- **Versioning and A/B toggle ** : I was unable to complete this part due to time constraints. However, it can be implemented by extending the DTO with an additional attribute, version. This attribute would be updated each time a change is made,          without overwriting the previous record. Instead, a new version of the claim would be created. As a result, each claim would maintain an array of its versions.
+- **Versioning and A/B toggle** : I was unable to complete this part due to time constraints. However, it can be implemented by extending the DTO with an additional attribute, version. This attribute would be updated each time a change is made,          without overwriting the previous record. Instead, a new version of the claim would be created. As a result, each claim would maintain an array of its versions.
 
 ---
 
