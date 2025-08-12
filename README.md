@@ -1,4 +1,3 @@
-````markdown
 # 📚 Claims gRPC - REST API
 
 A monorepo project providing a gRPC-based backend (NestJS) and a React frontend for managing insurance claims.
@@ -47,10 +46,12 @@ In each app directory (e.g., `api`, `cms`), run:
 ```bash
 cd <app-name>
 yarn install   # or npm install
+````
 
 ```Example
 cd api && npm install
 cd cms && npm install
+```
 
 ```Quick Start (from root folder)
 # For Yarn users
@@ -63,6 +64,7 @@ cd api && npm install && cd ../cms && npm install && cd ../api && npm run start:
 ```bash
 cd <app-name>
 yarn test
+```
 
 
 ---
@@ -147,7 +149,6 @@ message DependsOn {
   string key = 1; // Key of the field this depends on
   string value = 2; // Values that this field depends on
 }
-```
 ````
 
 </details>
