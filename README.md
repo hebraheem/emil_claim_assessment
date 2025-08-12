@@ -39,6 +39,34 @@ This project implements a claims management system using gRPC for backend commun
 
 ---
 
+## Running the App
+
+### 1. Install dependencies
+In each app directory (e.g., `api`, `cms`), run:
+
+```bash
+cd <app-name>
+yarn install   # or npm install
+
+```Example
+cd api && npm install
+cd cms && npm install
+
+```Quick Start (from root folder)
+# For Yarn users
+cd api && yarn install && cd ../cms && yarn install && cd ../api && yarn start:app
+
+# For npm users
+cd api && npm install && cd ../cms && npm install && cd ../api && npm run start:app
+
+# Running test
+```bash
+cd <app-name>
+yarn test
+
+
+---
+
 ## Authentication
 
 - It's is assumed that user(s) are already verified therefore no authentication module or library was build/used. However the frontend must send a userId in the header as x-userid, this is currently hardcoded on the frontend and backend verifies that the x-userId is in the header otherwise it throws `non-authorize` error.
