@@ -376,6 +376,7 @@ message DeleteClaimResponse {
 
 - **EMBEDDING** : Deliver as a single JS bundle (Not completely sure how this is done)
 - **TESTING** : Minimal test coverage
+- **Versioning and A/B toggle ** : I was unable to complete this part due to time constraints. However, it can be implemented by extending the DTO with an additional attribute, version. This attribute would be updated each time a change is made,          without overwriting the previous record. Instead, a new version of the claim would be created. As a result, each claim would maintain an array of its versions.
 
 ---
 
