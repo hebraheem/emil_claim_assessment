@@ -19,13 +19,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./apps/api/test/jest-e2e.json",
     "proto:g": "protoc --plugin=protoc-gen-ts_proto=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./proto/types --ts_proto_opt=nestJs=true,useExactTypes=false,outputServices=grpc ./proto/claim.proto",
-    "start:all": "concurrently \"yarn start:dev claims\" \"yarn start:dev api\"",
-    "docker:up-no-cache": "docker compose build --no-cache && docker compose up -d",
-    "docker:up": "docker compose up -d",
-    "docker:down": "docker compose down",
-    "docker:db": "docker compose up -d db",
-    "docker:backend": "docker compose up -d api db",
-    "start:app": "concurrently \"yarn docker:db\" \"yarn start:all\" \"cd ../cms && yarn start\""
+    "start:all": "concurrently \"yarn start:dev claims\" \"yarn start:dev api\""
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.13.4",

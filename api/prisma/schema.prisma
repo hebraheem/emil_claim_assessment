@@ -5,18 +5,18 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  provider      = "prisma-client-js"
+  output        = "../generated/prisma"
   binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
 }
 
-datasource db { 
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev-test.db"
 }
 
 model Claim {
-  claimId          Int     @id @default(autoincrement())
+  claimId          Int      @id @default(autoincrement())
   userId           String
   policyId         String
   description      String
@@ -30,8 +30,6 @@ model Claim {
   rejectionReason  String? // optional
 }
 
-
-
 model ClaimMeta {
   id      Int    @id @default(autoincrement())
   claimId Int
@@ -42,10 +40,7 @@ model ClaimMeta {
   @@index([claimId])
 }
 
-
-
 model claimConfig {
-  id             String   @id 
-  request       Json     // Stores ClaimConfigUpdateRequestDto
- 
+  id      String @id
+  request Json // Stores ClaimConfigUpdateRequestDto
 }

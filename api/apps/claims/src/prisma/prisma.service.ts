@@ -1,5 +1,4 @@
 import { Global, Injectable, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from 'generated/prisma';
 /**
  *
@@ -36,15 +35,10 @@ import { PrismaClient } from 'generated/prisma';
 @Global()
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
-  constructor(config: ConfigService) {
+  constructor() {
     super({
       log: ['warn', 'error'],
       errorFormat: 'pretty',
-      datasources: {
-        db: {
-          url: config.get('DATABASE_URL'),
-        },
-      },
     });
   }
 

@@ -5,7 +5,7 @@ import { CLAIMS_PACKAGE_NAME } from 'proto';
 import { join } from 'path';
 import { ValidationPipe } from '@nestjs/common';
 
-async function bootstrap() {
+async function bootstrapGrpc() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     ClaimsModule,
     {
@@ -21,6 +21,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   await app.listen();
+  console.log('gRPC microservice is listening on 0.0.0.0:50051');
 }
 
-void bootstrap();
+void bootstrapGrpc();

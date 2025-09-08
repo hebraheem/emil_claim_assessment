@@ -4,6 +4,7 @@ import { ClaimConfigResponseDto } from 'proto';
 
 import { PrismaService } from './prisma/prisma.service';
 import { InputJsonValue } from 'generated/prisma/runtime/library';
+import { Prisma } from 'generated/prisma';
 
 @Injectable()
 export class ClaimsConfigService {
@@ -25,7 +26,6 @@ export class ClaimsConfigService {
       } as any;
 
       // Upsert config in the database
-      // eslint-disable-next-line
       const config = (await this.prismaService.claimConfig.upsert({
         where: { id: 'default' },
         update: {
@@ -54,14 +54,13 @@ export class ClaimsConfigService {
    */
   async getConfig(): Promise<ClaimConfigResponseDto> {
     try {
-      // eslint-disable-next-line
       const fetchedConfig = (await this.prismaService.claimConfig.findUnique({
         where: { id: 'default' },
       })) as { id: string; request: object };
 
       return Promise.resolve({
-        data: fetchedConfig?.request as ClaimConfigResponseDto['data'],
-        message: 'Configuration updated successfully',
+        data: (fetchedConfig?.request as ClaimConfigResponseDto['data']) ?? [],
+        message: 'Configuration retrieved successfully',
         success: true,
         status: 200,
       });
@@ -71,13 +70,16 @@ export class ClaimsConfigService {
   }
 
   private handleError(error: unknown, message: string): ClaimConfigResponseDto {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      console.error('Prisma error code:', error.code, error.meta);
+    } else {
+      console.error(error);
+    }
+
     return {
       data: [],
       message:
-        typeof error === 'object' &&
-        error !== null &&
-        'message' in error &&
-        typeof (error as { message?: unknown }).message === 'string'
+        typeof error === 'object' && error !== null && 'message' in error
           ? (error as { message: string }).message
           : message,
       success: false,

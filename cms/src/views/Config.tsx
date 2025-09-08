@@ -53,7 +53,7 @@ const Config = () => {
       try {
         const response = await fetchConfig();
         setConfig(response);
-        if (response?.data?.length) setSelectedStep(response.data[0]);
+        if (response?.data) setSelectedStep(response.data[0]);
         localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(response));
       } catch (error: any) {
         alert("Error fetching configuration: " + error.message);
