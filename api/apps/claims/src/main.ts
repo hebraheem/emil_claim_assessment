@@ -9,7 +9,7 @@ async function bootstrapGrpc() {
   const grpcHost = process.env.CLAIMS_SERVICE_HOST || 'localhost';
   const grpcPort = process.env.CLAIMS_SERVICE_PORT || '50051';
 
-  const url = `0.0.0.0:${grpcPort}`; // server binds to all interfaces
+  const url = `${grpcHost}:${grpcPort}`; // server binds to all interfaces
 
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     ClaimsModule,
