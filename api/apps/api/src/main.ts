@@ -4,7 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './exceptions/http-filter.exception';
 import { UserIdInterceptor } from './interceptors/user-id.interceptor';
 
-async function bootstrap() {
+async function bootstrapHttp() {
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix('api');
@@ -17,7 +17,9 @@ async function bootstrap() {
     credentials: true,
   });
 
-  await app.listen(process.env.PORT ?? 5172);
+  const httpPort = process.env.PORT || 5172;
+  await app.listen(httpPort);
+  console.log(`HTTP server listening on port ${httpPort}`);
 }
 
-void bootstrap();
+void bootstrapHttp();

@@ -6,7 +6,11 @@ import { join } from 'path';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrapGrpc() {
-  const url = `${process.env.CLAIMS_SERVICE_HOST! || '0.0.0.0'}:${process.env.PORT || '50051'}`;
+  const grpcHost = process.env.CLAIMS_SERVICE_HOST || 'localhost';
+  const grpcPort = process.env.CLAIMS_SERVICE_PORT || '50051';
+
+  const url = `0.0.0.0:${grpcPort}`; // server binds to all interfaces
+
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     ClaimsModule,
     {
@@ -22,7 +26,7 @@ async function bootstrapGrpc() {
   app.useGlobalPipes(new ValidationPipe());
 
   await app.listen();
-  console.log(`gRPC microservice is listening on ${url}`);
+  console.log(`gRPC server listening on ${grpcHost}:${grpcPort}`);
 }
 
 void bootstrapGrpc();
