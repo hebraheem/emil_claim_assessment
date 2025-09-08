@@ -13,7 +13,8 @@ async function bootstrapGrpc() {
       options: {
         package: CLAIMS_PACKAGE_NAME,
         protoPath: join(__dirname, '../claim.proto'),
-        url: '0.0.0.0:' + (process.env.PORT || '50051'),
+        // url: '0.0.0.0:' + (process.env.PORT || '50051'),
+        url: `${process.env.CLAIMS_SERVICE_HOST! || '0.0.0.0'}:${process.env.PORT || '50051'}`,
       },
     },
   );
