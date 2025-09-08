@@ -164,14 +164,17 @@ export class ClaimsService {
   async getClaims(request: GetClaimsRequest): Promise<GetClaimsResponse> {
     const { page = 1, pageSize = 10, userId, search } = request;
 
-    const where: Record<string, any> = {};
+    let where: Record<string, any> = {};
     if (userId) where.userId = userId;
     if (request.status) where.status = request.status;
     if (typeof search === 'string' && search.trim() !== '') {
-      where.OR = [
-        { incidentType: { contains: search, mode: 'insensitive' } },
-        { policyId: { contains: search, mode: 'insensitive' } },
-      ];
+      where = {
+        ...where,
+        OR: [
+          { incidentType: { contains: search } },
+          { policyId: { contains: search } },
+        ],
+      };
     }
     const [claims, total] = await Promise.all([
       this.prismaService.claim.findMany({

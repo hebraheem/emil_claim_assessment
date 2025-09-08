@@ -51,7 +51,7 @@ export const fetchClaims = async (
   let queryString = "";
   if (Object.keys(query).length) {
     Object.entries(query).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
+      if (value !== undefined && value !== null && value !== "") {
         queryString += `${key}=${value}&`;
       }
     });
