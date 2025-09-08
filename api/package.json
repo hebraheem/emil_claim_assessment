@@ -19,7 +19,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./apps/api/test/jest-e2e.json",
     "proto:g": "protoc --plugin=protoc-gen-ts_proto=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./proto/types --ts_proto_opt=nestJs=true,useExactTypes=false,outputServices=grpc ./proto/claim.proto",
-    "start:all": "concurrently \"yarn start:dev claims\" \"yarn start:dev api\""
+    "start:all": "cp -r ./proto/claim.proto dist/apps/ && concurrently \"yarn start:dev claims\" \"yarn start:dev api\""
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.13.4",
